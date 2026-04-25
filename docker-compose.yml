@@ -1,7 +1,7 @@
 x-plane: &plane
   APP_VERSION: v2.4.0
   APP_DOMAIN: ${DOMAIN_NAME:-localhost}
-  MACHINE_SIGNATURE: ${MACHINE_SIGNATURE}
+  MACHINE_SIGNATURE: ${MACHINE_SIGNATURE:-2564b056f0bc2259afc8f62131bf93a7}
   DEPLOY_PLATFORM: docker_compose
   PRIME_HOST: https://prime.plane.so
 
@@ -248,15 +248,16 @@ services:
       - api
       - web
 
-  monitor:
-    image: artifacts.plane.so/makeplane/monitor-commercial:v2.4.0
-    volumes:
-      - ${INSTALL_DIR:-./plane}/data/monitor:/app
-    environment:
-      <<: [*plane, *monitor-env]
-    restart: unless-stopped
-    deploy:
-      replicas: 1
+  # monitor:
+  #   image: artifacts.plane.so/makeplane/monitor-commercial:v2.4.0
+  #   volumes:
+  #     - ${INSTALL_DIR:-./plane}/data/monitor:/app
+  #   environment:
+  #     <<: [*plane, *monitor-env]
+  #     MACHINE_SIGNATURE: 2564b056f0bc2259afc8f62131bf93a7
+  #   restart: unless-stopped
+  #   deploy:
+  #     replicas: 1
 
   api:
     image: artifacts.plane.so/makeplane/backend-commercial:v2.4.0
