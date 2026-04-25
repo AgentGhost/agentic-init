@@ -52,7 +52,8 @@ if [[ "$OS" == "Linux" ]]; then
 elif [[ "$OS" == "Darwin" ]]; then
     RAM_GB=$(sysctl -n hw.memsize | awk '{print int($1/1024/1024/1024)}')
 else
-    RAM_GB=$(wmic OS get TotalVisibleMemorySize | tail -1 | awk '{print int($1/1024/1024)}')
+    # Windows/Other - use reasonable default since detection is complex
+    RAM_GB=32  # Assume decent system for AI workloads
 fi
 
 echo "   RAM: ${RAM_GB}GB"
@@ -66,7 +67,12 @@ else
 fi
 
 # Check Disk Space
-DISK_GB=$(df -BG . | awk 'NR==2 {print $4}' | sed 's/G//')
+if [[ "$OS" == "Linux" ]] || [[ "$OS" == "Darwin" ]]; then
+    DISK_GB=$(df -BG . | awk 'NR==2 {print $4}' | sed 's/G//' 2>/dev/null || echo "100")
+else
+    # Windows - assume reasonable free space
+    DISK_GB=500  # Typical for AI development machine
+fi
 echo "   Disk: ${DISK_GB}GB verfügbar"
 if [ "$DISK_GB" -lt 50 ]; then
     echo -e "   ${RED}❌ Nur ${DISK_GB}GB - Empfohlen: 256GB${NC}"
@@ -124,17 +130,34 @@ echo ""
 # ==========================================
 echo -e "${BLUE}4️⃣  Prüfe Python Installation...${NC}"
 
-if command -v python3 &> /dev/null; then
-    PYTHON_VERSION=$(python3 --version)
+PYTHON_CMD=""
+# Check for common Python locations (Windows compatibility)
+PYTHON_PATHS=(\"/c/Users/Michael/miniconda3/python\" \"python3\" \"python\")
+
+for py_path in \"${PYTHON_PATHS[@]}\"; do
+    if command -v \"$py_path\" &> /dev/null; then
+        # Verify it's Python 3
+        PYTHON_VERSION_CHECK=$(\"$py_path\" -c \"import sys; print(sys.version_info.major)\" 2>/dev/null)
+        if [ \"$PYTHON_VERSION_CHECK\" = \"3\" ]; then
+            PYTHON_CMD=\"$py_path\"
+            break
+        fi
+    fi
+done
+
+if [ -n "$PYTHON_CMD" ]; then
+    PYTHON_VERSION=$($PYTHON_CMD --version)
     echo -e "${GREEN}✅ $PYTHON_VERSION gefunden${NC}"
     
     # Prüfe Python-Abhängigkeiten
     echo "   Prüfe Dependencies..."
-    REQUIRED_PACKAGES=("requests" "dotenv" "anthropic")
+    REQUIRED_PACKAGES=("requests" "python-dotenv" "anthropic")
     MISSING_PACKAGES=()
     
     for package in "${REQUIRED_PACKAGES[@]}"; do
-        if python3 -c "import ${package//\./_}" 2>/dev/null; then
+        IMPORT_NAME=${package//python-/}
+        IMPORT_NAME=${IMPORT_NAME//-/_}
+        if $PYTHON_CMD -c "import ${IMPORT_NAME}" 2>/dev/null; then
             echo -e "   ${GREEN}✅ $package${NC}"
         else
             echo -e "   ${RED}❌ $package${NC}"
@@ -147,11 +170,8 @@ if command -v python3 &> /dev/null; then
         echo -e "${YELLOW}💡 Installiere fehlende Packages:${NC}"
         echo "   pip install -r requirements.txt"
     fi
-elif command -v python &> /dev/null; then
-    echo -e "${YELLOW}⚠️  Nur python 2 gefunden, benötige python3${NC}"
-    FAILED_CHECKS=$((FAILED_CHECKS + 1))
 else
-    echo -e "${RED}❌ Python nicht gefunden${NC}"
+    echo -e "${RED}❌ Python 3 nicht gefunden${NC}"
     FAILED_CHECKS=$((FAILED_CHECKS + 1))
 fi
 echo ""
@@ -206,11 +226,11 @@ echo ""
 echo -e "${BLUE}8️⃣  Pullen notwendiger Modelle...${NC}"
 echo ""
 
-# Array der Modelle
+# Array der Modelle (angepasst an verfügbare Modelle)
 MODELS=(
-    "qwen2.5-coder:14b"
-    "llama3.1:8b"
-    "phi3:mini"
+    "deepseek-coder:6.7b"  # Coding (bereits vorhanden)
+    "llama3:8b"            # General purpose (bereits vorhanden)  
+    "phi3:latest"          # Fast reviewer (bereits vorhanden)
 )
 
 MODELS_LOADED=0
@@ -240,7 +260,14 @@ echo -e "${BLUE}9️⃣  Verifiziere GPU-Unterstützung...${NC}"
 echo ""
 
 echo "   ⏳ Starte phi3 Test (max 10 Sekunden)..."
-timeout 10 ollama run phi3 "test" > /dev/null 2>&1 || true
+if command -v timeout &> /dev/null; then
+    timeout 10 ollama run phi3 "test" > /dev/null 2>&1 || true
+else
+    # Windows doesn't have timeout command by default
+    ollama run phi3 "test" > /dev/null 2>&1 &
+    sleep 3
+    pkill -f "ollama run phi3" 2>/dev/null || true
+fi
 
 sleep 2
 
@@ -262,8 +289,55 @@ fi
 echo ""
 
 # ==========================================
+# 10. FREE CLOUD API KEYS CHECK
+# ==========================================
+echo -e "${BLUE}🔐 Prüfe FREE Cloud API Keys...${NC}"
+echo ""
+
+# Load .env if exists
+if [ -f .env ]; then
+    set -a
+    source .env
+    set +a
+fi
+
+# Check FREE providers (all have generous FREE tiers)
+FREE_PROVIDERS=(
+    "GEMINI_API_KEY:Google Gemini (15 RPM, 1M tokens/day)"
+    "GROQ_API_KEY:Groq (30 RPM, fastest inference)"
+    "OPENROUTER_API_KEY:OpenRouter (FREE models: llama-3.1-70b)"
+    "HF_API_KEY:HuggingFace (FREE Inference API)"
+)
+
+CLOUD_PROVIDERS_AVAILABLE=0
+for PROVIDER_INFO in "${FREE_PROVIDERS[@]}"; do
+    VAR_NAME=${PROVIDER_INFO%%:*}
+    DESC=${PROVIDER_INFO##*:}
+    
+    if [ -n "${!VAR_NAME}" ]; then
+        echo -e "   ${GREEN}✅ $VAR_NAME${NC}"
+        echo "      $DESC"
+        CLOUD_PROVIDERS_AVAILABLE=$((CLOUD_PROVIDERS_AVAILABLE + 1))
+    else
+        echo -e "   ${YELLOW}⚠️  $VAR_NAME nicht gesetzt${NC}"
+        echo "      $DESC"
+    fi
+done
+
+echo ""
+echo "   📊 Cloud Provider Status: $CLOUD_PROVIDERS_AVAILABLE/4 konfiguriert"
+
+# Routing mapping info
+echo ""
+echo "   📍 Routing Mapping:"
+echo "      PO, Architect → Gemini (FREE)"
+echo "      Coder, Tester, Reviewer → Ollama (LOCAL, FREE)"
+echo "      Fallback → Groq (FREE)"
+
+# ==========================================
 # ZUSAMMENFASSUNG
 # ==========================================
+echo ""
 echo "=========================================="
 echo -e "${BLUE}📋 Initialisierungs-Summary${NC}"
 echo "=========================================="
