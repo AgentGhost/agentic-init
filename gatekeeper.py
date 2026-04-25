@@ -60,19 +60,19 @@ ROUTING_TABLE = {
     # Operative Rollen → Local Ollama (kostenlos, privat)
     "Coder": {
         "primary": "ollama",
-        "model": "qwen2.5-coder:14b",
+        "model": "deepseek-coder:6.7b",
         "fallback": "groq",
         "fallback_model": "llama-3.3-70b-versatile"
     },
     "Tester": {
         "primary": "ollama",
-        "model": "llama3.1:8b",
+        "model": "llama3:8b",
         "fallback": "groq",
         "fallback_model": "llama-3.1-8b-instant"
     },
     "Reviewer": {
         "primary": "ollama",
-        "model": "phi3:mini",
+        "model": "phi3",
         "fallback": "groq",
         "fallback_model": "llama-3.1-8b-instant"
     }
