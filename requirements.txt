@@ -29,5 +29,17 @@ black==23.9.0                  # Code Formatter
 flake8==6.1.0                  # Linting
 mypy==1.6.0                    # Type Checking
 
+# CI/CD Pipeline Support
+prometheus-client==0.19.0      # Metrics Export
+docker==7.0.0                  # Docker API Client
+httpx==0.26.0                  # Async HTTP Client
+
+# Plane Integration
+djangorestframework==3.14.0    # Django REST Framework
+psycopg2-binary==2.9.9         # PostgreSQL Adapter
+
+# Jenkins Integration
+jenkins-python==3.11.0         # Jenkins API Client
+
 # Documentation
 sphinx==7.2.0                  # Doc Generation
