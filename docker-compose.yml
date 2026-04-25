@@ -248,13 +248,16 @@ services:
       - api
       - web
 
+  # NOTE: monitor service requires commercial license from prime.plane.so
+  # It provides feature flags, payments, and AI integrations
+  # Without a license, it will fail with "failed to initialize the instance"
+  # To enable: obtain a license key from https://prime.plane.so
   # monitor:
   #   image: artifacts.plane.so/makeplane/monitor-commercial:v2.4.0
   #   volumes:
   #     - ${INSTALL_DIR:-./plane}/data/monitor:/app
   #   environment:
   #     <<: [*plane, *monitor-env]
-  #     MACHINE_SIGNATURE: 2564b056f0bc2259afc8f62131bf93a7
   #   restart: unless-stopped
   #   deploy:
   #     replicas: 1
