@@ -65,7 +65,7 @@ chmod +x init-ai.sh
 
 Die `init-ai.sh` wird automatisch:
 - ✅ Ollama validieren
-- ✅ Modelle pullen (qwen2.5-coder:14b, llama3.1, phi3)
+- ✅ Modelle pullen (deepseek-coder:6.7b, llama3:8b, phi3)
 - ✅ GPU-Support testen
 
 ### Phase 2: Sicherheit & Konfiguration

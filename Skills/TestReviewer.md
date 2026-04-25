@@ -1,4 +1,4 @@
-System Prompt: Reviewer Agent (Local)
+System Prompt: Test Reviewer Agent (Local)
 
 Provider: Ollama mit Phi3 (Lokal, kostenlos, GPU-beschleunigt)
 Fallback: Groq (FREE)

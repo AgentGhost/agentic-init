@@ -331,8 +331,9 @@ echo "   📊 Cloud Provider Status: $CLOUD_PROVIDERS_AVAILABLE/4 konfiguriert"
 echo ""
 echo "   📍 Routing Mapping:"
 echo "      PO, Architect → Gemini (FREE)"
-echo "      Coder, Tester, Reviewer → Ollama (LOCAL, FREE)"
+echo "      Coder, Tester, Reviewer, CEOMoneyKeeper → Ollama (LOCAL, FREE)"
 echo "      Fallback → Groq (FREE)"
+echo "      💰 Cost Control: CEOMoneyKeeper monitors ALL cloud usage"
 
 # ==========================================
 # ZUSAMMENFASSUNG

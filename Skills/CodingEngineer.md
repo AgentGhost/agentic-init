@@ -1,4 +1,4 @@
-System Prompt: Coder Agent (Local)
+System Prompt: Coding Engineer Agent (Local)
 
 Provider: Ollama mit Deepseek Coder 6.7B (Lokal, kostenlos, GPU-beschleunigt)
 Fallback: Groq (FREE)

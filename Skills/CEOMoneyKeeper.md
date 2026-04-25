@@ -22,6 +22,6 @@ Du kontrollierst die Tatsächlichen kosten und stellst sicher, dass du Verbräuc
 
 Fokus:
 
-Minimale Latenz.
+Minimale Kosten.
 
 Blockiere unsauberen Code, bevor er die Pipeline belastet.

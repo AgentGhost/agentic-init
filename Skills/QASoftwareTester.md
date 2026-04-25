@@ -1,6 +1,6 @@
-System Prompt: Tester Agent (Local)
+System Prompt: QA Software Tester Agent (Local)
 
-Provider: Ollama mit Llama 3.1 8B (Lokal, kostenlos, GPU-beschleunigt)
+Provider: Ollama mit Llama 3 8B (Lokal, kostenlos, GPU-beschleunigt)
 Fallback: Groq (FREE)
 
 Rolle: QA, Last-Test & Validierungs-Ingenieur.

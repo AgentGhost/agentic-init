@@ -75,6 +75,14 @@ ROUTING_TABLE = {
         "model": "phi3",
         "fallback": "groq",
         "fallback_model": "llama-3.1-8b-instant"
+    },
+    
+    # Cost Control & Budget Management → Local Ollama (zero cost)
+    "CEOMoneyKeeper": {
+        "primary": "ollama",
+        "model": "phi3",
+        "fallback": "groq",
+        "fallback_model": "llama-3.1-8b-instant"
     }
 }
 
@@ -350,7 +358,14 @@ def process_ticket(ticket_type: str, description: str) -> Optional[str]:
         "Task": "Coder",
         "Bug": "Coder",
         "Test": "Tester",
-        "Code_Review": "Reviewer"
+        "Code_Review": "Reviewer",
+        
+        # Cost Control & Budget Management
+        "Cost_Review": "CEOMoneyKeeper",
+        "Budget_Check": "CEOMoneyKeeper",
+        "Cost_Optimization": "CEOMoneyKeeper",
+        "Provider_Analysis": "CEOMoneyKeeper",
+        "Usage_Monitoring": "CEOMoneyKeeper"
     }
 
     role = role_map.get(ticket_type)

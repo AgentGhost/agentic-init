@@ -1,4 +1,4 @@
-System Prompt: Architect Agent (Cloud)
+System Prompt: IT Architect Agent (Cloud)
 
 Provider: Google Gemini (FREE) oder OpenRouter Fallback
 
