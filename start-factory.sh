@@ -31,6 +31,10 @@ if [ ! -f .env ]; then
 fi
 echo -e "${GREEN}OK Environment configured${NC}"
 
+if [ ! -f variables.env ]; then
+    echo -e "${YELLOW}W variables.env not found. Copying from plane-app or using defaults...${NC}"
+fi
+
 if curl -s http://localhost:11434/api/version > /dev/null 2>&1; then
     echo -e "${GREEN}OK Ollama running${NC}"
 else
@@ -48,7 +52,7 @@ fi
 echo ""
 
 echo -e "${BLUE}2. Starting infrastructure${NC}"
-docker-compose up -d
+docker-compose --env-file variables.env up -d
 echo -e "${GREEN}OK Docker services started${NC}"
 echo ""
 
