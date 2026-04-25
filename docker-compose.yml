@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database für Plane
+  plane-db:
+    image: postgres:15-alpine
+    container_name: plane-db
+    environment:
+      POSTGRES_DB: plane
+      POSTGRES_USER: plane
+      POSTGRES_PASSWORD: plane
+    volumes:
+      - plane-db-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plane"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis für Caching
+  plane-redis:
+    image: redis:7-alpine
+    container_name: plane-redis
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Plane Backend API
+  plane-api:
+    image: makeplane/plane-backend:latest
+    container_name: plane-api
+    environment:
+      DEBUG: 0
+      ALLOWED_HOSTS: "*"
+      DATABASE_URL: postgresql://plane:plane@plane-db:5432/plane
+      REDIS_URL: redis://plane-redis:6379/
+      SECRET_KEY: your-secret-key-change-this
+    depends_on:
+      plane-db:
+        condition: service_healthy
+      plane-redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Plane Frontend Web UI
+  plane-web:
+    image: makeplane/plane-frontend:latest
+    container_name: plane-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    depends_on:
+      - plane-api
+    ports:
+      - "8080:3000"
+    restart: always
+
+volumes:
+  plane-db-data:
+
+networks:
+  default:
+    name: agentic-factory

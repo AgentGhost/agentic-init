@@ -1,0 +1,33 @@
+# requirements.txt
+# ==========================================
+# Python Dependencies für Agentic Factory
+# ==========================================
+# Installation:
+#   pip install -r requirements.txt
+# ==========================================
+
+# Core Dependencies
+python-dotenv==1.0.0          # .env Datei Support
+requests==2.31.0              # HTTP Client für APIs
+pydantic==2.5.0                # Data Validation
+
+# Anthropic (Cloud Intelligence)
+anthropic==0.7.1               # Claude API Client
+
+# Ollama (Local Models)
+# Note: ollama CLI wird separat installiert
+# https://ollama.ai
+
+# Optional: Advanced Features
+# langchain==0.1.0             # LLM Orchestration
+# chromadb==0.4.10             # Vector DB für RAG
+# sqlalchemy==2.0.0            # SQLite ORM für Memory
+
+# Development
+pytest==7.4.0                  # Testing Framework
+black==23.9.0                  # Code Formatter
+flake8==6.1.0                  # Linting
+mypy==1.6.0                    # Type Checking
+
+# Documentation
+sphinx==7.2.0                  # Doc Generation
