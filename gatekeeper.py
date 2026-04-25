@@ -25,6 +25,44 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 HF_API_KEY = os.getenv("HF_API_KEY")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY")
 
+PLANE_URL = os.getenv("PLANE_URL", "http://localhost")
+PLANE_API_KEY = os.getenv("PLANE_API_KEY")
+PLANE_WORKSPACE = os.getenv("PLANE_WORKSPACE", "agentic-projects")
+PLANE_PROJECT = os.getenv("PLANE_PROJECT", "2963c11f-4904-49a2-8795-2109e363efdf")
+
+def create_plane_issue(name: str, description: str = "", state: str = "backlog", priority: str = "high") -> Optional[dict]:
+    """Create an issue in Plane."""
+    if not PLANE_API_KEY:
+        print("   PLANE_API_KEY not configured")
+        return None
+    
+    state_ids = {
+        "backlog": "5e5c9adb-21dc-4c73-8a2c-4d57096b5cee",
+        "todo": "d44db477-3397-4a88-9bd0-4cb86a04fc60",
+        "in_progress": "92add1f5-e161-4113-82a5-78713ac3e097",
+        "done": "4a1c74ca-961f-4e60-81e6-44c616763bc1",
+        "cancelled": "2767e651-8c18-4092-9952-2ba2a909018b",
+    }
+    
+    state_id = state_ids.get(state, state_ids["backlog"])
+    
+    url = f"{PLANE_URL}/api/v1/workspaces/{PLANE_WORKSPACE}/projects/{PLANE_PROJECT}/issues/"
+    headers = {"x-api-key": PLANE_API_KEY, "Content-Type": "application/json"}
+    data = {"name": name, "state": state_id, "priority": priority}
+    if description:
+        data["description"] = description
+    
+    try:
+        print(f"   Plane: Creating issue '{name}'...")
+        response = requests.post(url, json=data, headers=headers, timeout=30)
+        response.raise_for_status()
+        issue = response.json()
+        print(f"   Plane: Issue created: {issue.get('id', 'unknown')}")
+        return issue
+    except Exception as e:
+        print(f"   Plane error: {e}")
+        return None
+
 def call_ollama(model: str, prompt: str) -> Optional[str]:
     print(f"   Ollama -> {model}")
     try:
@@ -184,7 +222,7 @@ def print_provider_status() -> bool:
         return False
     return True
 
-def process_ticket(ticket_type: str, description: str) -> Optional[str]:
+def process_ticket(ticket_type: str, description: str, create_plane_issue_flag: bool = False) -> Optional[str]:
     print(f"\nTicket: {ticket_type}")
     print(f"   {description[:60]}...")
     print("-" * 40)
@@ -193,6 +231,11 @@ def process_ticket(ticket_type: str, description: str) -> Optional[str]:
     if not role:
         print(f"Unknown ticket type: {ticket_type}")
         return None
+
+    if create_plane_issue_flag:
+        issue = create_plane_issue(name=f"[{ticket_type}] {description[:50]}", description=description)
+        if issue:
+            print(f"   Plane issue URL: {PLANE_URL}/{PLANE_WORKSPACE}/projects/{PLANE_PROJECT}/issues/{issue['id']}")
 
     return invoke_agent(role, description)
 
@@ -204,6 +247,7 @@ def main():
     parser.add_argument("--role", "-r", help="Direct role to invoke (overrides ticket routing)")
     parser.add_argument("--prompt", "-p", help="Prompt text")
     parser.add_argument("--test-fallback", "-f", action="store_true", help="Test fallback chain by disabling primary provider")
+    parser.add_argument("--create-issue", "-c", action="store_true", help="Create issue in Plane")
     args = parser.parse_args()
 
     print("\nAgentic Factory - Multi-Provider Router")
@@ -226,7 +270,7 @@ def main():
                 print(f"   Result: FAILED")
 
     elif args.ticket and args.desc:
-        process_ticket(args.ticket, args.desc)
+        process_ticket(args.ticket, args.desc, args.create_issue)
 
     elif args.role and args.prompt:
         result = invoke_agent(args.role, args.prompt)
