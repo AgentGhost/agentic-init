@@ -1,4 +1,5 @@
-version: '3.8'
+# Docker Compose for Plane (Requirements Management)
+# Updated with proper environment variables for stable operation
 
 services:
   # PostgreSQL Database für Plane
@@ -34,11 +35,47 @@ services:
     image: makeplane/plane-backend:latest
     container_name: plane-api
     environment:
-      DEBUG: 0
+      # Core
+      DEBUG: "0"
       ALLOWED_HOSTS: "*"
+      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+      
+      # Database & Cache
       DATABASE_URL: postgresql://plane:plane@plane-db:5432/plane
       REDIS_URL: redis://plane-redis:6379/
-      SECRET_KEY: your-secret-key-change-this
+      
+      # Security (CHANGE THIS IN PRODUCTION!)
+      SECRET_KEY: "agentic-factory-dev-key-2026-change-in-production"
+      
+      # Celery (Background Tasks)
+      CELERY_BROKER_URL: redis://plane-redis:6379/1
+      CELERY_RESULT_BACKEND: redis://plane-redis:6379/2
+      
+      # Email (Optional - uses console for dev)
+      EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+      EMAIL_HOST: "localhost"
+      EMAIL_PORT: "1025"
+      EMAIL_HOST_USER: ""
+      EMAIL_HOST_PASSWORD: ""
+      EMAIL_USE_TLS: "false"
+      DEFAULT_FROM_EMAIL: "noreply@plane.local"
+      
+      # Frontend
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000"
+      
+      # AWS/S3 (Optional - can use local storage)
+      USE_S3: "false"
+      
+      # Sentry (Error tracking - optional)
+      SENTRY_DSN: ""
+      
+      # Admin credentials (for first login)
+      ADMIN_EMAIL: "admin@plane.local"
+      ADMIN_PASSWORD: "admin123"
+      
+      # API Rate limiting
+      THROTTLE_ENABLED: "false"
+      
     depends_on:
       plane-db:
         condition: service_healthy
@@ -46,24 +83,32 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    restart: always
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/" ]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
   # Plane Frontend Web UI
   plane-web:
     image: makeplane/plane-frontend:latest
     container_name: plane-web
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000"
+      NEXT_PUBLIC_ADMIN_BASE_URL: "http://localhost:8000/admin"
     depends_on:
       - plane-api
     ports:
       - "8080:3000"
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   plane-db-data:
