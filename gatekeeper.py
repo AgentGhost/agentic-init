@@ -135,14 +135,19 @@ def call_anthropic(model: str, prompt: str) -> Optional[str]:
 
 PROVIDERS = {"ollama": call_ollama, "gemini": call_gemini, "groq": call_groq, "openrouter": call_openrouter, "huggingface": call_huggingface, "anthropic": call_anthropic}
 
-def invoke_agent(role: str, prompt: str) -> Optional[str]:
+def invoke_agent(role: str, prompt: str, force_fallback: bool = False) -> Optional[str]:
     if role not in CONFIG["roles"]:
         print(f"Unknown role: {role}")
         return None
 
     cfg = CONFIG["roles"][role]
-    system_prompt = f"You are a {role} agent. Respond concisely and professionally.\n\n"
+    system_prompt = f"You are a {role} agent. Reply with just: {role}\n\n"
     full_prompt = system_prompt + prompt
+
+    if force_fallback:
+        print(f"   [FORCE FALLBACK] Skipping {cfg['provider']}, using {cfg['fallback']}...")
+        fallback_fn = PROVIDERS[cfg["fallback"]]
+        return fallback_fn(cfg["fallback_model"], full_prompt)
 
     primary_fn = PROVIDERS[cfg["provider"]]
     result = primary_fn(cfg["model"], full_prompt)
@@ -192,24 +197,55 @@ def process_ticket(ticket_type: str, description: str) -> Optional[str]:
     return invoke_agent(role, description)
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Agentic Factory Router")
+    parser.add_argument("--ticket", "-t", help="Ticket type (e.g., Strategic_Vision, Code_Review)")
+    parser.add_argument("--desc", "-d", help="Ticket description")
+    parser.add_argument("--role", "-r", help="Direct role to invoke (overrides ticket routing)")
+    parser.add_argument("--prompt", "-p", help="Prompt text")
+    parser.add_argument("--test-fallback", "-f", action="store_true", help="Test fallback chain by disabling primary provider")
+    args = parser.parse_args()
+
     print("\nAgentic Factory - Multi-Provider Router")
     print("=" * 50)
     if not print_provider_status():
         sys.exit(1)
 
-    print("\n" + "=" * 50)
-    print("Demo Run")
-    print("=" * 50)
+    if args.test_fallback:
+        print("\n" + "=" * 50)
+        print("Fallback Test Mode - Testing ALL roles")
+        print("=" * 50)
+        for role, cfg in CONFIG["roles"].items():
+            print(f"\n{role}:")
+            print(f"   Primary:   {cfg['provider']} -> {cfg['model']}")
+            print(f"   Fallback:  {cfg['fallback']} -> {cfg['fallback_model']}")
+            result = invoke_agent(role, f"Reply with just the word: {role}", force_fallback=True)
+            if result:
+                print(f"   Result: OK ({result[:60]}...)")
+            else:
+                print(f"   Result: FAILED")
 
-    demo_tickets = [("Strategic_Vision", "Design a login system with OAuth2"), ("Code_Review", "def add(a, b): return a + b")]
-    for ticket_type, desc in demo_tickets:
-        result = process_ticket(ticket_type, desc)
+    elif args.ticket and args.desc:
+        process_ticket(args.ticket, args.desc)
+
+    elif args.role and args.prompt:
+        result = invoke_agent(args.role, args.prompt)
         if result:
-            print(f"\nOutput (truncated):")
-            print(result[:200] + ("..." if len(result) > 200 else ""))
-            print()
-        else:
-            print("No response received\n")
+            print(result)
+
+    else:
+        print("\n" + "=" * 50)
+        print("Demo Run")
+        print("=" * 50)
+        demo_tickets = [("Strategic_Vision", "Design a login system with OAuth2"), ("Code_Review", "def add(a, b): return a + b")]
+        for ticket_type, desc in demo_tickets:
+            result = process_ticket(ticket_type, desc)
+            if result:
+                print(f"\nOutput (truncated):")
+                print(result[:200] + ("..." if len(result) > 200 else ""))
+                print()
+            else:
+                print("No response received\n")
 
 if __name__ == "__main__":
     main()

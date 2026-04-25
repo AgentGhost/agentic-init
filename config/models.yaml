@@ -12,8 +12,8 @@ roles:
   Architect:
     provider: gemini
     model: gemini-2.0-flash
-    fallback: openrouter
-    fallback_model: google/gemini-flash-1.5
+    fallback: groq
+    fallback_model: llama-3.3-70b-versatile
     description: IT Architect - infrastructure & system design
 
   Coder:
