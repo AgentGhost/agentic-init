@@ -63,6 +63,26 @@ def create_plane_issue(name: str, description: str = "", state: str = "backlog",
         print(f"   Plane error: {e}")
         return None
 
+def add_plane_comment(issue_id: str, comment: str) -> Optional[dict]:
+    """Add a comment to an issue in Plane."""
+    if not PLANE_API_KEY:
+        return None
+    
+    url = f"{PLANE_URL}/api/v1/workspaces/{PLANE_WORKSPACE}/projects/{PLANE_PROJECT}/issues/{issue_id}/comments/"
+    headers = {"x-api-key": PLANE_API_KEY, "Content-Type": "application/json"}
+    data = {"comment": comment}
+    
+    try:
+        print(f"   Plane: Adding comment...")
+        response = requests.post(url, json=data, headers=headers, timeout=30)
+        response.raise_for_status()
+        result = response.json()
+        print(f"   Plane: Comment added")
+        return result
+    except Exception as e:
+        print(f"   Plane comment error: {e}")
+        return None
+
 def call_ollama(model: str, prompt: str) -> Optional[str]:
     print(f"   Ollama -> {model}")
     try:
@@ -232,12 +252,21 @@ def process_ticket(ticket_type: str, description: str, create_plane_issue_flag: 
         print(f"Unknown ticket type: {ticket_type}")
         return None
 
+    issue = None
     if create_plane_issue_flag:
         issue = create_plane_issue(name=f"[{ticket_type}] {description[:50]}", description=description)
         if issue:
             print(f"   Plane issue URL: {PLANE_URL}/{PLANE_WORKSPACE}/projects/{PLANE_PROJECT}/issues/{issue['id']}")
 
-    return invoke_agent(role, description)
+    result = invoke_agent(role, description)
+    
+    if result and issue:
+        comment = f"**AI Analysis ({role}):**\n\n{result[:2000]}"
+        if len(result) > 2000:
+            comment += "\n\n_(truncated)_"
+        add_plane_comment(issue['id'], comment)
+    
+    return result
 
 def main():
     import argparse
