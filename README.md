@@ -138,26 +138,20 @@ agentic-init/
 
 ---
 
-## 🤖 Agent-Rollen
+## 🤖 Agent Roles
 
-### Cloud Agents (Teuer, Strategisch)
+All role-to-model mappings are defined in `config/models.yaml`.
 
-| Role | Model | Aufgaben |
-|------|-------|----------|
-| **Product Owner (PO)** | Claude 3.5 Sonnet | Vision → Epics, Backlog, DoD |
-| **Architect** | Claude 3.5 Sonnet | Terraform, Kafka-Design, IaC |
+| Role | Provider | Description |
+|------|----------|-------------|
+| **PO** | Cloud (Gemini/Groq) | Vision → Epics, Backlog, DoD |
+| **Architect** | Cloud (Gemini/OpenRouter) | Terraform, Kafka-Design, IaC |
+| **Coder** | Local (Ollama) | Feature implementation |
+| **Tester** | Local (Ollama) | Unit tests, QA |
+| **Reviewer** | Local (Ollama) | Code review, static analysis |
+| **CEOMoneyKeeper** | Local (Ollama) | Cost control & budget monitoring |
 
-**Kosten:** ~$0.003/1K Tokens → Hard-Limit $16/Monat
-
-### Local Agents (Kostenlos, Operational)
-
-| Role | Model | VRAM | Aufgaben |
-|------|-------|------|----------|
-| **Coder** | Qwen2.5-Coder 14B | ~10 GB | Feature-Implementierung |
-| **Tester** | Llama3.1 8B | ~5 GB | Unit-Tests, QA |
-| **Reviewer** | Phi3 Mini | ~2 GB | Code-Review, Syntax-Check |
-
-**Kosten:** €0,00 ✅
+Costs: Local = €0, Cloud = FREE tier (Gemini 15 RPM, Groq 30 RPM)
 
 ---
 
@@ -205,7 +199,7 @@ git checkout -b feature/my-feature
 git add .
 git commit -m "feat: my feature
 
-Implemented by: qwen2.5-coder
+Implemented by: deepseek-coder:6.7b
 Tests: unit + integration
 "
 
@@ -220,7 +214,7 @@ gh pr create --title "AI: My Feature" --body "Generated with AI support"
 feat(component): description
 
 AI-Context:
-- Model: qwen2.5-coder:14b
+- Model: deepseek-coder:6.7b
 - Time: 2min
 - Tests: ✅ 12/12 passed
 ```

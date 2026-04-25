@@ -1,0 +1,67 @@
+# Agentic Factory - Role to Model Mappings
+# Single Source of Truth for all provider/model configurations
+
+roles:
+  PO:
+    provider: gemini
+    model: gemini-2.0-flash
+    fallback: groq
+    fallback_model: llama-3.3-70b-versatile
+    description: Product Owner - strategic task decomposition
+
+  Architect:
+    provider: gemini
+    model: gemini-2.0-flash
+    fallback: openrouter
+    fallback_model: google/gemini-flash-1.5
+    description: IT Architect - infrastructure & system design
+
+  Coder:
+    provider: ollama
+    model: deepseek-coder:6.7b
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Senior Fullstack Developer - feature implementation
+
+  Tester:
+    provider: ollama
+    model: llama3:8b
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: QA Engineer - test suite creation & validation
+
+  Reviewer:
+    provider: ollama
+    model: phi3:latest
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Gatekeeper - code review & static analysis
+
+  CEOMoneyKeeper:
+    provider: ollama
+    model: phi3:latest
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Cost control & budget monitoring
+
+# Ticket type to role mapping
+ticket_routing:
+  Epic: PO
+  Strategic_Vision: PO
+  Architecture_Blueprint: Architect
+  Feature: Coder
+  Task: Coder
+  Bug: Coder
+  Test: Tester
+  Code_Review: Reviewer
+  Cost_Review: CEOMoneyKeeper
+  Budget_Check: CEOMoneyKeeper
+  Cost_Optimization: CEOMoneyKeeper
+  Provider_Analysis: CEOMoneyKeeper
+  Usage_Monitoring: CEOMoneyKeeper
+
+# Ollama models to pull on init
+ollama_models:
+  - deepseek-coder:6.7b
+  - llama3:8b
+  - phi3:latest

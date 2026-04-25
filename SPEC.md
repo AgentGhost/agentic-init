@@ -8,7 +8,7 @@ Da dieses Dokument die "Single Source of Truth" ist, enthält es alle Skripte, P
 
 ## 0. Strategisches Ziel & Vision
 
-**Ziel:** Aufbau einer souveränen Entwicklungsumgebung (Maximal 16 $/Monat Hard-Limit), die POCs lokal in Labor-Umgebungen (VMs) validiert und für den Hyperscale vorbereitet.
+**Ziel:** Aufbau einer souveränen Entwicklungsumgebung, die POCs lokal in Labor-Umgebungen (VMs) validiert und für den Hyperscale vorbereitet.
 
 **Kernkonzept:** Strategic-HITL (Human-in-the-Loop). Der Mensch agiert als CEO/Visionär und steuert ausschließlich die strategische Ausrichtung der Product Owner (PO) Agents.
 
@@ -171,96 +171,7 @@ Diese Prompts werden beim Initialisieren der jeweiligen Agenten als System-Konte
 
 Dieses Skript ist das absolute Herzstück der Fabrik. Es liest Tickets aus Plane und stellt durch striktes Sandboxing zu 100 % sicher, dass teure Cloud-Tokens nur für die strategischen Rollen (PO, Architect) verwendet werden. Operative Aufgaben werden zwingend an die lokale RX 6900 XT (Ollama) delegiert.
 
-```python
-import os
-import requests
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# ==========================================
-# KONFIGURATION & SICHERHEIT
-# ==========================================
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY")
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-
-CLOUD_AGENTS = ["PO", "Architect"]
-
-# ==========================================
-# CLOUD EXECUTION (Streng limitiert)
-# ==========================================
-def invoke_cloud_agent(role: str, prompt: str) -> str:
-    """Nutzt den teuren Anthropic Key. Darf NUR für CLOUD_AGENTS aufgerufen werden."""
-    if role not in CLOUD_AGENTS:
-        raise PermissionError(f"SICHERHEITS-BLOCK: Rolle '{role}' darf keine Cloud-Tokens verbrauchen!")
-    
-    print(f"[CLOUD - {role}] Sende Request an Anthropic (Claude 3.5 Sonnet)...")
-    headers = {
-        "x-api-key": ANTHROPIC_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    payload = {
-        "model": "claude-3-5-sonnet-20240620",
-        "max_tokens": 2048,
-        "messages": [{"role": "user", "content": f"System-Rolle: {role}. {prompt}"}]
-    }
-    
-    response = requests.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers)
-    response.raise_for_status()
-    return response.json()['content'][0]['text']
-
-# ==========================================
-# LOCAL EXECUTION (Kostenlos)
-# ==========================================
-def invoke_local_agent(role: str, prompt: str) -> str:
-    """Nutzt RX 6900 XT via Ollama. Kostet 0,00 €."""
-    model_map = {
-        "Coder": "qwen2.5-coder:14b",
-        "Tester": "llama3.1:8b",
-        "Reviewer": "phi3:mini"
-    }
-    model = model_map.get(role)
-    if not model:
-        raise ValueError(f"Unbekannte lokale Rolle: {role}")
-
-    print(f"[LOCAL - {role}] Sende Request an Ollama ({model})...")
-    payload = {
-        "model": model,
-        "prompt": f"System-Rolle: {role}. {prompt}",
-        "stream": False
-    }
-    
-    response = requests.post(f"{OLLAMA_HOST}/api/generate", json=payload)
-    response.raise_for_status()
-    return response.json()['response']
-
-# ==========================================
-# DER GATEKEEPER (Ticket Routing Logik)
-# ==========================================
-def process_plane_ticket(ticket_type: str, ticket_description: str):
-    print(f"\n--- Verarbeite Plane Ticket (Typ: {ticket_type}) ---")
-    
-    if ticket_type in ["Epic", "Strategic_Vision"]:
-        return invoke_cloud_agent("PO", f"Zerlege diese Vision: {ticket_description}")
-        
-    elif ticket_type == "Architecture_Blueprint":
-        return invoke_cloud_agent("Architect", f"Erstelle IaC für: {ticket_description}")
-        
-    elif ticket_type in ["Feature", "Task"]:
-        return invoke_local_agent("Coder", f"Implementiere Ticket: {ticket_description}")
-        
-    elif ticket_type == "Test":
-        return invoke_local_agent("Tester", f"Schreibe Tests für: {ticket_description}")
-        
-    else:
-        print(f"Ignoriere unbekannten Ticket-Typ: {ticket_type}")
-
-if __name__ == "__main__":
-    # Test-Aufrufe
-    process_plane_ticket("Strategic_Vision", "Baue ein sicheres Login-System mit Kafka Backend.")
-    process_plane_ticket("Task", "Schreibe die auth_service.js für das Login-System.")
-```
+> See `gatekeeper.py` for the routing implementation. Role-to-model mappings are defined in `config/models.yaml`.
 
 ---
 
