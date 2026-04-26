@@ -33,7 +33,8 @@ Phase 4 — Optional follow-ups
 
  4.1 If TLS is later wanted, set CERT_ACME_CA=https://acme-v02.api.letsencrypt.org/directory AND add acme_ca  prefix back as part of a separately-guarded {$CERT_ACME_CA_DIRECTIVE} env var (do not re-introduce the bare acme_ca directive)
 4.2 Document in the repo README that the bundled image's Caddyfile is overridden via the config bind mount, and that editing the file requires restarting the proxy service
- 4.3 HTTP/3 (QUIC) on localhost: Caddy v2.10 enables HTTP/3 by default. On some Windows setups (including this one), HTTP/3 causes ERR_SSL_PROTOCOL_ERROR even with tls internal. Current fix: keep basic tls internal without protocol restrictions - issue appears on Windows clients connecting via QUIC/HTTP3. Workarounds: (A) use http://localhost instead of https://, (B) disable HTTP/3 at Caddy level if needed, (C) test from non-Windows client.
+ 4.3 HTTPS on localhost: Caddy v2.10 enables HTTP/3 by default. On some Windows clients, this causes ERR_SSL_PROTOCOL_ERROR. Use local certs (recommended for local dev) or tls internal. See plane/certs/ for local cert documentation.
+ 4.4 Local TLS certs: Generated via mkcert, valid for localhost only. For production, use Let's Encrypt or public CA.
  Relevant files
 docker-compose.yml — proxy service block (~line 492), specifically volumes: and the top-level volumes: declaration
 Caddyfile — the corrected Caddy configuration that replaces the image default
