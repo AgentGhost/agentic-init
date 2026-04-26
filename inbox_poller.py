@@ -18,10 +18,10 @@ POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "30"))
 PLANE_URL = os.getenv("PLANE_URL", "http://localhost")
 PLANE_API_KEY = os.getenv("PLANE_API_KEY")
 PLANE_WORKSPACE = os.getenv("PLANE_WORKSPACE", "agentic-projects")
-PLANE_PROJECT = os.getenv("PLANE_PROJECT", "2963c11f-4904-49a2-8795-2109e363efdf")
+PLANE_PROJECT = os.getenv("PLANE_PROJECT", "1266ca90-daf0-4da3-92b2-695c2edc674b")
 PLANE_CERT = str(Path(__file__).parent / "plane" / "certs" / "localhost+1.pem")
 
-BACKLOG_STATE_ID = "5e5c9adb-21dc-4c73-8a2c-4d57096b5cee"
+BACKLOG_STATE_ID = "1b2f5e1b-d647-4b0e-9bf8-b257307c30b1"
 
 VERIFY_SSL = False
 
