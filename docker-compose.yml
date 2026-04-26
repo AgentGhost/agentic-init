@@ -529,3 +529,14 @@ services:
 
 volumes:
   plane-caddy-data:
+
+  kafka-ui:
+    image: ghcr.io/provectus/kafka-ui:kafka-ui-v0.7.2
+    restart: unless-stopped
+    ports:
+      - target: 8080
+        published: ${KAFKA_UI_PORT:-8085}
+        protocol: tcp
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
