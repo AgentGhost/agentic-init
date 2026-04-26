@@ -85,7 +85,24 @@ JENKINS_TOKEN=your_jenkins_api_token
 
 ## 3. Infrastruktur-Setup (Lab-Umgebung)
 
-### A. Plane (Requirements) - `docker-compose.yml`
+### A. Aktuelle Versionen (2026-04-26)
+
+| Service | Image | Tag |
+|---------|-------|-----|
+| Plane Proxy | artifacts.plane.so/makeplane/proxy-commercial | v2.4.0 |
+| Plane API | artifacts.plane.so/makeplane/backend-commercial | v2.4.0 |
+| Plane Web | artifacts.plane.so/makeplane/web-commercial | v2.4.0 |
+| Plane Admin | artifacts.plane.so/makeplane/admin-commercial | v2.4.0 |
+| PostgreSQL | postgres | 15.7-alpine |
+| Redis/Valkey | valkey | 7.2.11-alpine |
+| RabbitMQ | rabbitmq | 3.13.6-management-alpine |
+| MinIO | minio | latest |
+| Jenkins | jenkins/jenkins | lts |
+| Kafka | apache/kafka | 3.7.0 |
+
+**Wichtig:** Plane v2.4.0 Caddy proxy hat Problem mit leeren `CERT_ACME_CA` env vars. Workaround: Lege `CERT_ACME_CA=` in variables.env fest (oder leer lassen).
+
+### B. Plane (Requirements) - `docker-compose.yml`
 
 Wird in einer lokalen Management-VM gehostet, um Epics und Issues zu verwalten.
 
@@ -172,6 +189,23 @@ Diese Prompts werden beim Initialisieren der jeweiligen Agenten als System-Konte
 Dieses Skript ist das absolute Herzstück der Fabrik. Es liest Tickets aus Plane und stellt durch striktes Sandboxing zu 100 % sicher, dass teure Cloud-Tokens nur für die strategischen Rollen (PO, Architect) verwendet werden. Operative Aufgaben werden zwingend an die lokale RX 6900 XT (Ollama) delegiert.
 
 > See `gatekeeper.py` for the routing implementation. Role-to-model mappings are defined in `config/models.yaml`.
+
+### A. inbox_poller.py
+
+Der Agent-Inbox-Poller. Läuft als Hintergrundprozess und:
+
+- Pollt Plane alle 30s nach neuen Backlog-Tickets
+- Routet Tickets automatisch via gatekeeper
+- Schreibt AI-Response in Issue-Beschreibung
+- Bewegt Issue nach "In Progress"
+
+```bash
+# Starten
+python inbox_poller.py
+
+# Oder als Service (Windows)
+nssm install inbox-poller python inbox_poller.py
+```
 
 ---
 
