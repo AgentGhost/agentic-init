@@ -79,7 +79,24 @@ OLLAMA_HOST=http://localhost:11434
 JENKINS_URL=http://localhost:8081
 JENKINS_USER=admin
 JENKINS_TOKEN=your_jenkins_api_token
+
+# --- Web Search (Grounding) ---
+TAVILY_API_KEY=your_tavily_free_tier_key
 ```
+
+## 2b. Optionale Cloud-Tools (POC)
+
+### Web Search / Grounding
+
+| Tool | Tier | Limit | Use Case |
+|------|------|-------|---------|
+| Tavily | Free | 1000 requests/month | Search-Grounding für Agent-Prompts |
+
+### Kurzzeit-Hosting (POC 2-3 Tage)
+
+| Provider | Typ | Kosten | Ideal für |
+|----------|-----|--------|---------|
+| Hetzner Cloud | Abo (stündlich) | ~€0,01-0,02/Stunde | Kurze POCs, 2-3 Tage Tests |
 
 ---
 

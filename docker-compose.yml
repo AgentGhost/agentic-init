@@ -517,7 +517,7 @@ services:
         protocol: tcp
         mode: host
     volumes:
-      - plane-caddy-config:/etc/caddy
+      - ./plane/caddy/config:/etc/caddy:ro
       - plane-caddy-data:/data
     depends_on:
       - web
@@ -527,5 +527,4 @@ services:
       - live
 
 volumes:
-  plane-caddy-config:
   plane-caddy-data:
