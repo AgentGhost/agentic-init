@@ -116,8 +116,26 @@ TAVILY_API_KEY=your_tavily_free_tier_key
 | MinIO | minio | latest |
 | Jenkins | jenkins/jenkins | lts |
 | Kafka | apache/kafka | 3.7.0 |
+| Kafka UI | provectuslabs/kafka-ui | latest |
+| Terraform | hashicorp/terraform | >=1.6 |
+
+### A2. Ports (Aktuell)
+
+| Service | Port | URL |
+|---------|-----|-----|
+| Plane Web | 80 | http://localhost |
+| Plane API | 8080 | http://localhost/api |
+| Kafka UI | 8085 | http://localhost:8085 |
+| Jenkins | 8081 | http://localhost:8081 |
+| MinIO | 9000 | http://localhost:9000 |
 
 **Wichtig:** Plane v2.4.0 Caddy proxy hat Problem mit leeren `CERT_ACME_CA` env vars. Workaround: Lege `CERT_ACME_CA=` in variables.env fest (oder leer lassen).
+
+**Kafka 3.7+ läuft im KRaft-Modus** - Kein Zookeeper mehr erforderlich. Das vereinfacht die Architektur und verbessert die Skalierbarkeit.
+
+**Lokale TLS-Zertifikate:** `plane/certs/localhost+1.pem` (mkcert-generiert). Nur für lokale Entwicklung - NICHT für Produktion.
+
+**Terraform IaC:** Siehe `terraform/` Verzeichnis für Infrastructure-as-Code Grundgerüst.
 
 ### B. Plane (Requirements) - `docker-compose.yml`
 
