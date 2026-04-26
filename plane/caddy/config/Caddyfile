@@ -18,6 +18,11 @@
 	reverse_proxy /{$BUCKET_NAME} plane-minio:9000
 	reverse_proxy /{$BUCKET_NAME}/* plane-minio:9000
 	reverse_proxy /* web:3000
+	
+	log {
+		output stdout
+		level INFO
+	}
 }
 
 :80 {
@@ -26,4 +31,6 @@
 
 :443 {
 	import plane_proxy
+	
+	tls internal
 }
