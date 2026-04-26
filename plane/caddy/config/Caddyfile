@@ -27,5 +27,5 @@
 :443 {
 	import plane_proxy
 	
-	tls internal
+	tls /certs/localhost+1.pem /certs/localhost+1-key.pem
 }

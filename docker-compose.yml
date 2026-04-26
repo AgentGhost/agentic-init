@@ -518,6 +518,7 @@ services:
         mode: host
     volumes:
       - ./plane/caddy/config:/etc/caddy:ro
+      - ./plane/certs:/certs:ro
       - plane-caddy-data:/data
     depends_on:
       - web
