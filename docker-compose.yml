@@ -450,7 +450,7 @@ services:
     depends_on:
       - plane-db
       - plane-mq
-      - monitor
+      # - monitor  # Requires commercial license - commented out
 
   pi-beat:
     image: artifacts.plane.so/makeplane/plane-pi-commercial:v2.4.0
@@ -517,11 +517,15 @@ services:
         protocol: tcp
         mode: host
     volumes:
-      - ${INSTALL_DIR:-./plane}/caddy/config:/config
-      - ${INSTALL_DIR:-./plane}/caddy/data:/data
+      - plane-caddy-config:/etc/caddy
+      - plane-caddy-data:/data
     depends_on:
       - web
       - api
       - space
       - admin
       - live
+
+volumes:
+  plane-caddy-config:
+  plane-caddy-data:
