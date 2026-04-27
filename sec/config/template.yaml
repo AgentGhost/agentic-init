@@ -1,0 +1,44 @@
+# Template Configuration
+# Copy this file to template.yaml and customize for your project
+
+plane:
+  # Get from Plane UI → Workspace → Settings → General
+  workspace_slug: "[YOUR_WORKSPACE_NAME]"
+  workspace_id: "[YOUR_WORKSPACE_ID]"  # e.g., f9724046-bcb1-4907-8eeb-f7eabe6f5346
+  project_id: "[YOUR_PROJECT_ID]"  # e.g., 1266ca90-daf0-4da3-92b2-695c2edc674b
+  
+  # Get from Plane UI → Project → States
+  backlog_state_id: "[BACKLOG_STATE_ID]"  # e.g., 1b2f5e1b-d647-4b0e-9bf8-b257307c30b1
+  todo_state_id: "[TODO_STATE_ID]"
+  in_progress_state_id: "[IN_PROGRESS_STATE_ID]"
+  done_state_id: "[DONE_STATE_ID]"
+  
+  api_key: "[YOUR_PLANE_API_KEY]"
+
+kafka:
+  bootstrap_servers: "localhost:9092"
+  topics:
+    tasks: "agent-tasks"
+    results: "agent-results"
+    lifecycle: "task-lifecycle"
+
+gatekeeper:
+  # Hard cost limit per month (USD)
+  monthly_budget_limit: 16.00
+  
+  # Local models (Ollama)
+  local_model_alias: "qwen2.5-coder:14b"
+
+# Jenkins integration
+jenkins:
+  url: "http://localhost:8081"
+  user: "admin"
+  # Generate token at: Jenkins → User → Configure → API Token
+  api_token: "[YOUR_JENKINS_TOKEN]"
+
+# GitHub integration (optional)
+github:
+  owner: "[YOUR_GITHUB_ORG]"
+  repo: "[YOUR_REPO_NAME]"
+  # Generate at: Settings → Developer settings → Personal access tokens
+  token: "[YOUR_GITHUB_TOKEN]"

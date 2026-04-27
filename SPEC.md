@@ -5,9 +5,88 @@
 
 ---
 
-Diese Spezifikation beschreibt eine hochautomatisierte Software-Fabrik für das Jahr 2026. Sie nutzt lokale GPU-Power (RX 6900 XT) für die operative Ausführung und Cloud-Intelligenz (Claude) für die strategische Steuerung.
+Diese Spezifikation beschreibt eine hochautomatisierte Software-Fabrik für das Jahr 2026. Sie nutzt lokale GPU-Power (RX 6900 XT) für die operative Ausführung und Cloud-Intelligenz (Claude/MiniMax) für die strategische Steuerung und lokale Zen-Schwärme für fehlerfreien Code.
 
 Da dieses Dokument die "Single Source of Truth" ist, enthält es alle Skripte, Prompts und Konfigurationen direkt eingebettet.
+
+---
+
+## 0. Projekt-Struktur
+
+```
+agentic-init/                 # Root
+├── dev/                     # Development
+│   ├── gatekeeper.py        # Core router & Swarm Orchestrator
+│   ├── inbox_poller.py      # Plane poller
+│   ├── swarm_ctrl.py        # Zen-Swarm CLI Trigger
+│   ├── worker.py            # Kafka executor
+│   ├── init-ai.sh          # Ollama setup
+│   ├── Jenkinsfile         # CI/CD pipeline
+│   ├── hooks/             # Git hooks
+│   └── Skills/             # Agent skills
+│
+├── ops/                    # Operations
+│   ├── docker-compose.yml # Plane + Kafka (KRaft) + Jenkins
+│   ├── start-factory.sh   # Start script
+│   ├── kafka-topics.sh    # Topic creation
+│   ├── terraform/        # IaC (Hetzner / Libvirt)
+│   ├── plane/           # Plane config + data
+│   ├── certs/           # TLS certs
+│   ├── monitoring/      # Prometheus/Grafana
+│   └── docker/head/     # Head container Dockerfile
+│
+├── sec/                    # Security
+│   ├── config/           # models.yaml, template.yaml
+│   ├── .env             # API keys (gitignored)
+│   └── .env.example     # Template
+│
+├── docs/                   # Documentation
+├── compliance/            # Compliance logs
+├── SPEC.md                # THIS FILE
+└── README.md             # Quick start
+```
+
+**Trennung nach Verantwortung:**
+| Ordner | Owner | Zweck |
+|--------|-------|-------|
+| `dev/` | Dev | Code, Testing, CI, Swarm-Logik |
+| `ops/` | Ops | Deployment, Infra (WSL2 Docker) |
+| `sec/` | Sec | Config, Keys |
+| `docs/` | Alle | Dokumentation |
+
+---
+
+## 0b. Architektur: Kopf & Körper
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    WSL 2 (Ubuntu) - KOPF                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐   │
+│  │  Plane   │ │ Jenkins  │ │  Kafka   │ │ Claude API  │   │
+│  │  (PM)    │ │  (CI/CD) │ │  (Bus)   │ │ (Cloud-AI)  │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘   │
+│                         ┌──────────────┐                     │
+│                         │  head docker  │                     │
+│                         │ inbox_poller  │                     │
+│                         │ gatekeeper    │                     │
+│                         │ swarm_ctrl    │                     │
+│                         └──────────────┘                     │
+└─────────────────────────────────────────────────────────────┘
+                             │ │
+               host.docker.internal:11434
+                             │ │
+┌─────────────────────────────────────────────────────────────┐
+│                    Windows Host - KÖRPER                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐   │
+│  │   RX     │ │  Ollama  │ │ VS Code   │ │   Cursor     │   │
+│  │ 6900 XT  │ │ (Local)  │ │   IDE     │ │    IDE       │   │
+│  │  (GPU)   │ │ (Model)  │ │Continue  │ │  Continue    │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**WSL 2 (Head):** Plane, Jenkins, Kafka, Claude API, gatekeeper (via head container)
+**Windows Host (Body):** RX 6900 XT GPU, Ollama, IDEs mit Continue Extension
 
 ---
 
@@ -15,7 +94,7 @@ Da dieses Dokument die "Single Source of Truth" ist, enthält es alle Skripte, P
 
 **Ziel:** Aufbau einer souveränen Entwicklungsumgebung, die POCs lokal in Labor-Umgebungen (VMs) validiert und für den Hyperscale vorbereitet.
 
-**Kernkonzept:** Strategic-HITL (Human-in-the-Loop). Der Mensch agiert als CEO/Visionär und steuert ausschließlich die strategische Ausrichtung der Product Owner (PO) Agents.
+**Kernkonzept:** Strategic-HITL (Human-in-the-Loop). Der Mensch agiert als CEO/Visionär und steuert ausschließlich die strategische Ausrichtung der Product Owner (PO) Agents. Die Ausführung wird durch Zen-Schwärme (Sub-Agenten) atomisiert und automatisiert.
 
 ---
 
@@ -23,20 +102,23 @@ Da dieses Dokument die "Single Source of Truth" ist, enthält es alle Skripte, P
 
 Die RX 6900 XT (16GB VRAM) unter Windows dient als lokales Kraftwerk. Die Intelligenz wird nach Komplexität und Kosten verteilt.
 
-### Cloud-Modelle (Strategie & Architektur)
+### Cloud-Modelle (Strategie, Architektur & IDE)
 
 | Rolle | Modell | Provider | Fokus |
 |-------|--------|----------|-------|
 | Product Owner (PO) | claude-3-5-sonnet | Anthropic | Vision-Mapping, Plane API, Backlog |
-| Architect | claude-3-5-sonnet | Anthropic | IaC (Terraform), Kafka-Design |
+| Architect | claude-3-5-sonnet | Anthropic | IaC (Terraform), System-Design |
+| IDE Master (Chat) | MiniMax M2.5 Free | OpenCode Zen | Komplexe Logik-Fragen direkt im Editor |
+| IDE Writer (Auto) | Ling 2.6 Flash | OpenCode Zen | Blitzschnelles Tab-Autocomplete |
 
-### Lokale Modelle (Ausführung & Qualität)
+### Lokale Modelle (Ausführung, Swarm & Qualität)
 
 | Rolle | Modell | VRAM Bedarf | Ollama Befehl |
 |-------|--------|-------------|---------------|
-| Coder | qwen2.5-coder:14b | ~10 GB | `ollama pull qwen2.5-coder:14b` |
-| Tester/QA | llama3.1:8b | ~5 GB | `ollama pull llama3.1` |
-| Reviewer | phi3:mini | ~2 GB | `ollama pull phi3` |
+| Swarm Master | qwen2.5-coder:14b | ~10 GB | `ollama pull qwen2.5-coder:14b` |
+| Zen-Critic / QA | llama3.1:8b | ~5 GB | `ollama pull llama3.1` |
+| Sub: Writer | qwen2.5-coder:7b | ~4 GB | `ollama pull qwen2.5-coder:7b` |
+| Sub: Researcher | phi3:mini | ~2 GB | `ollama pull phi3` |
 
 ### GPU-Verifizierung (Windows/AMD)
 
@@ -66,9 +148,9 @@ Bevor irgendeine `.env` Datei angelegt wird, muss das Git-Repository initialisie
 __pycache__/
 ```
 
-### C. Die `.env` Konfiguration
+### C. Die `.env` Konfiguration (`sec/.env`)
 
-Erst nachdem die `.gitignore` existiert, wird die `.env`-Datei im Stammverzeichnis angelegt:
+Diese Datei liegt ausschließlich in der WSL2-VM und wird niemals nach Windows synchronisiert.
 
 ```bash
 # --- Cloud Intelligenz (Anthropic) ---
@@ -80,183 +162,207 @@ PLANE_API_KEY=your_plane_api_token_here
 PLANE_URL=http://localhost:8080
 
 # --- Lokale Infrastruktur ---
-OLLAMA_HOST=http://localhost:11434
+OLLAMA_HOST=http://host.docker.internal:11434
 JENKINS_URL=http://localhost:8081
 JENKINS_USER=admin
 JENKINS_TOKEN=your_jenkins_api_token
 
 # --- Web Search (Grounding) ---
 TAVILY_API_KEY=your_tavily_free_tier_key
+
+# --- IaC / Staging ---
+HCLOUD_TOKEN=your_hetzner_api_token
 ```
-
-## 2b. Optionale Cloud-Tools (POC)
-
-### Web Search / Grounding
-
-| Tool | Tier | Limit | Use Case |
-|------|------|-------|---------|
-| Tavily | Free | 1000 requests/month | Search-Grounding für Agent-Prompts |
-
-### Kurzzeit-Hosting (POC 2-3 Tage)
-
-| Provider | Typ | Kosten | Ideal für |
-|----------|-----|--------|---------|
-| Hetzner Cloud | Abo (stündlich) | ~€0,01-0,02/Stunde | Kurze POCs, 2-3 Tage Tests |
 
 ---
 
-## 3. Infrastruktur-Setup (Lab-Umgebung)
+## 3. Infrastruktur-Setup (Lab-Umgebung WSL2)
+
+Alle administrativen Tools laufen isoliert als Docker-Container in der WSL2-Ubuntu-VM.
 
 ### A. Aktuelle Versionen (2026-04-26)
 
 | Service | Image | Tag |
 |---------|-------|-----|
-| Plane Proxy | artifacts.plane.so/makeplane/proxy-commercial | v2.4.0 |
-| Plane API | artifacts.plane.so/makeplane/backend-commercial | v2.4.0 |
-| Plane Web | artifacts.plane.so/makeplane/web-commercial | v2.4.0 |
-| Plane Admin | artifacts.plane.so/makeplane/admin-commercial | v2.4.0 |
+| Plane | makeplane/*-commercial | v2.4.0 |
 | PostgreSQL | postgres | 15.7-alpine |
 | Redis/Valkey | valkey | 7.2.11-alpine |
-| RabbitMQ | rabbitmq | 3.13.6-management-alpine |
-| MinIO | minio | latest |
 | Jenkins | jenkins/jenkins | lts |
-| Kafka | apache/kafka | 3.7.0 |
+| Kafka | bitnami/kafka | 3.7 (KRaft-Modus) |
 | Kafka UI | provectuslabs/kafka-ui | latest |
 | Terraform | hashicorp/terraform | >=1.6 |
 
-### A2. Ports (Aktuell)
+**Wichtig:** Kafka 3.7+ läuft im KRaft-Modus - Kein Zookeeper mehr erforderlich. Das vereinfacht die Architektur und verbessert die Skalierbarkeit in der VM erheblich.
 
-| Service | Port | URL |
-|---------|-----|-----|
-| Plane Web | 80 | http://localhost |
-| Plane API | 8080 | http://localhost/api |
-| Kafka UI | 8085 | http://localhost:8085 |
-| Jenkins | 8081 | http://localhost:8081 |
-| MinIO | 9000 | http://localhost:9000 |
-
-**Wichtig:** Plane v2.4.0 Caddy proxy hat Problem mit leeren `CERT_ACME_CA` env vars. Workaround: Lege `CERT_ACME_CA=` in variables.env fest (oder leer lassen).
-
-**Kafka 3.7+ läuft im KRaft-Modus** - Kein Zookeeper mehr erforderlich. Das vereinfacht die Architektur und verbessert die Skalierbarkeit.
-
-**Lokale TLS-Zertifikate:** `plane/certs/localhost+1.pem` (mkcert-generiert). Nur für lokale Entwicklung - NICHT für Produktion.
-
-**Terraform IaC:** Siehe `terraform/` Verzeichnis für Infrastructure-as-Code Grundgerüst.
-
-### B. Plane (Requirements) - `docker-compose.yml`
-
-Wird in einer lokalen Management-VM gehostet, um Epics und Issues zu verwalten.
+### B. Zentrale `ops/docker-compose.yml`
 
 ```yaml
 version: '3.8'
 services:
+  # --- PLANE ALM ---
   plane-db:
     image: postgres:15-alpine
     restart: always
+    volumes: [plane_db_data:/var/lib/postgresql/data]
   plane-redis:
     image: redis:7-alpine
     restart: always
   plane-api:
     image: makeplane/plane-backend:latest
     restart: always
+    env_file: ../sec/.env
   plane-web:
     image: makeplane/plane-frontend:latest
-    ports:
-      - "8080:3000"
+    ports: ["8080:3000"]
     restart: always
+
+  # --- JENKINS CI/CD ---
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports: ["8081:8080"]
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+  # --- KAFKA (KRaft-Modus, Zookeeper-less) ---
+  kafka:
+    image: bitnami/kafka:3.7
+    ports: ["9092:9092"]
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_KRAFT_CLUSTER_ID=agentic-factory-cluster-id
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - kafka_data:/bitnami/kafka
+    restart: always
+
+volumes:
+  plane_db_data:
+  jenkins_data:
+  kafka_data:
 ```
 
-### B. CI/CD & IaC
+### C. Ports (Aktuell)
 
-- **Jenkins:** Automatisiert den operativen Workflow (Build → Deploy → Test)
-- **Terraform:** Nutzt libvirt oder proxmox Provider für lokale VMs
-- **Kafka:** Lokaler Cluster via Docker für asynchrone POC-Validierung
-
----
-
-## 4. Agenten-Prompts (Systemanweisungen)
-
-Diese Prompts werden beim Initialisieren der jeweiligen Agenten als System-Kontext übergeben.
-
-### 4.1 Product Owner (Claude-Cloud)
-
-**Mission:** Du bist das "Business Brain" der Fabrik (Modell: Claude 3.5 Sonnet). Du nimmst vage strategische Anweisungen des CEOs entgegen und transformierst sie in ein strukturiertes Backlog in Plane.
-
-**Aufgaben:**
-- Zerlege Visionen in Epics und User Stories
-- Nutze die Plane REST-API zur Ticket-Erstellung
-- Definiere präzise "Definitions of Done" (DoD), die der Tester-Agent automatisiert prüfen kann
-
-### 4.2 Architect (Claude-Cloud)
-
-**Mission:** Du bist der System-Designer (Modell: Claude 3.5 Sonnet). Plane die Labor-Umgebung für den POC.
-
-**Aufgaben:**
-- Erstelle Terraform-Blueprints (für KVM/Libvirt) und entwirf Kafka-Topologien
-- Deine Designs müssen lokal lauffähig sein, aber den Pfad zum Hyperscale (AWS/Azure) bereits in der Konfiguration vorbereiten
-
-### 4.3 Coder (Qwen-Local)
-
-**Mission:** Senior Fullstack Dev (Modell: Qwen2.5-Coder 14B, lokal). Du bist das Arbeitspferd der Fabrik.
-
-**Aufgaben:**
-- Implementiere Features basierend auf Plane-Tickets
-- Du hast keinen Zugriff auf externe APIs
-- Deine Priorität ist funktionsfähiger, fehlerfreier Code innerhalb der lokalen Laborumgebung
-- Erstelle saubere Feature-Branches
-
-### 4.4 Tester (Llama-Local)
-
-**Mission:** QA & Last-Test Ingenieur (Modell: Llama 3.1 8B, lokal). Du bist das Sicherheitsnetz.
-
-**Aufgaben:**
-- Validiere den Code gegen die DoD des POs
-- Erstelle Unit-Tests und simuliere Last auf dem Kafka-Bus (Producer/Consumer Skripte)
-- Melde Bugs direkt als neues Issue in Plane
-
-### 4.5 Reviewer (Phi3-Local)
-
-**Mission:** Gatekeeper (Modell: Phi3 Mini, lokal). Du bist der schnellste Filter im System.
-
-**Aufgaben:**
-- Prüfe Diffs in Pre-Commit Hooks auf Syntax und Security
-- Eskaliere an den Cloud-Architect, falls lokale Fixes nach 3 Versuchen scheitern
-- Blockiere unsauberen Code
+| Service | Port | URL | Läuft in |
+|---------|-----|-----|---------|
+| Plane Web | 80 | http://localhost | Docker |
+| Plane API | intern | via Caddy | Docker |
+| Kafka UI | 8085 | http://localhost:8085 | Docker |
+| Jenkins | 8081 | http://localhost:8081 | Docker |
+| MinIO | 9000 | http://localhost:9000 | Docker |
+| Ollama | 11434 | localhost:11434 | Windows Host |
 
 ---
 
-## 5. Core-Logik: Das Gatekeeper-Routing-Script (`gatekeeper.py`)
+## 4. Agenten-Prompts & Zen-Swarm Rollen
 
-Dieses Skript ist das absolute Herzstück der Fabrik. Es liest Tickets aus Plane und stellt durch striktes Sandboxing zu 100 % sicher, dass teure Cloud-Tokens nur für die strategischen Rollen (PO, Architect) verwendet werden. Operative Aufgaben werden zwingend an die lokale RX 6900 XT (Ollama) delegiert.
+Das System nutzt das **Zen-Swarm-Prinzip**. Aufgaben werden nicht mehr von einem einzigen Coder gelöst, sondern in Atom-Schritten von Sub-Agenten iterativ abgearbeitet, bis ein fehlerfreier Zustand ("Zen") erreicht ist.
 
-> See `gatekeeper.py` for the routing implementation. Role-to-model mappings are defined in `config/models.yaml`.
+### 4.1 Product Owner & Architect (Cloud)
+
+**Mission:** Du bist das strategische "Business Brain" (Claude 3.5 Sonnet).
+
+- Zerlege Visionen in Epics und User Stories via Plane REST-API.
+- Entwirf IaC-Blueprints (Terraform) für Hetzner/Libvirt.
+
+### 4.2 Swarm Master (Qwen 14B - Local)
+
+**Mission:** Orchestrator der Ausführung. Du verteilst Plane-Tickets als asynchrone Aufgaben (via Kafka) an deine Sub-Agenten und fügst die finalen Diffs zusammen.
+
+### 4.3 Sub: Researcher (Phi3 + Tavily - Local/API)
+
+**Mission:** Beschaffe fehlenden Kontext. Scrape via Tavily aktuelle API-Docs und erstelle Grounding-Context für die Writer.
+
+### 4.4 Sub: Writer (Qwen 7B - Local)
+
+**Mission:** Atomarer Coder. Du schreibst ausschließlich minimale Code-Diffs (SEARCH/REPLACE). Kein Refactoring ohne Auftrag.
+
+### 4.5 Sub: Zen-Critic / Tester (Llama 3.1 8B - Local)
+
+**Mission:** Das Sicherheitsnetz. Validiere die Diffs des Writers. Melde "Code-Smell" oder Syntax-Fehler lokal zurück, damit der Writer (ohne Cloud-Kosten) korrigieren kann, bevor der Code committet wird.
+
+---
+
+## 5. Core-Logik: Routing & Worker-Scripts
+
+Das Herzstück der Fabrik teilt sich in drei Haupt-Skripte im `dev/` Ordner auf.
 
 ### A. inbox_poller.py
 
-Der Agent-Inbox-Poller. Läuft als Hintergrundprozess und:
+Läuft als Hintergrundprozess in der VM.
 
-- Pollt Plane alle 30s nach neuen Backlog-Tickets
-- Routet Tickets automatisch via gatekeeper
-- Schreibt AI-Response in Issue-Beschreibung
-- Bewegt Issue nach "In Progress"
+- Pollt Plane alle 30s nach neuen Tickets.
+- Routet Tickets je nach Typ an den gatekeeper.py.
+- Bewegt Issue nach "Todo" oder "In Progress".
 
-```bash
-# Starten
-python inbox_poller.py
+**Auto-Start:** Wird automatisch von `start-factory.sh` gestartet:
+- In WSL 2: als `head` Docker Container
+- Auf Windows Host: als Python-Prozess
 
-# Oder als Service (Windows)
-nssm install inbox-poller python inbox_poller.py
+### B. gatekeeper.py
+
+Die strikte Routing-Firewall.
+
+- **IF** Epic/Vision: Route an Anthropic (Claude 3.5).
+- **IF** Feature/Bug: Triggere den lokalen /swarm via Kafka.
+
+### C. swarm_ctrl.py (Der Zen-Loop)
+
+Das Skript für den isolierten Lösungszyklus:
+
+1. Researcher generiert Kontext.
+2. Writer schreibt Diff.
+3. Critic prüft Diff.
+4. Bei Fehler: Zurück zu Schritt 2 (Max. 3 Iterationen).
+
+---
+
+## 6. IDE Integration (VS Code / Cursor auf Windows)
+
+Für die manuelle Entwicklungsarbeit auf dem Windows-Host wird die Open-Source Extension **Continue** genutzt, konfiguriert mit "OpenCode Zen" Modellen für höchste Performance und null Kosten.
+
+`~/.continue/config.json`:
+
+```json
+{
+  "models": [
+    {
+      "title": "Logic (MiniMax M2.5)",
+      "model": "minimax-m2.5",
+      "provider": "openai",
+      "apiBase": "DEIN_OPENCODE_ENDPUNKT"
+    },
+    {
+      "title": "Local Swarm Master",
+      "model": "qwen2.5-coder:14b",
+      "provider": "ollama",
+      "apiBase": "http://localhost:11434"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Speed (Ling 2.6 Flash)",
+    "model": "ling-2.6-flash",
+    "provider": "openai",
+    "apiBase": "DEIN_OPENCODE_ENDPUNKT"
+  }
+}
 ```
 
 ---
 
-## 6. Git Best Practices & Hooks
+## 7. Git Best Practices & Hooks
 
 - **Kleine Commits:** Jede Änderung muss atomar sein
 - **AI-Context:** Jede Commit-Message enthält Details zum agierenden Modell (z.B. `implemented by qwen2.5-coder`)
 
 ### Pre-Commit Hook (`.git/hooks/pre-commit`)
-
-Muss in jedem Agenten-Repository hinterlegt sein.
 
 ```bash
 #!/bin/bash
@@ -269,27 +375,29 @@ exit 0
 
 ---
 
-## 7. Implementierungs-Roadmap
+## 8. Implementierungs-Roadmap
 
-### Phase 1 (Kraftwerk)
+Die Implementierung folgt den 5 Phasen. In Plane werden diese als **Cycles** verwaltet:
 
-Ollama installieren, Modelle laden (`qwen2.5-coder:14b`, `llama3.1`, `phi3`), GPU-Support prüfen.
+| Phase | Cycle Name | Focus | Key Issues |
+|-------|-------------|-------|------------|
+| Phase 1 | `Kraftwerk` | Ollama, Modelle, GPU | (manual setup) |
+| Phase 2 | `BUero` | Git, .env, Docker | AGI-1,2,3,4,5 |
+| Phase 3 | `FliesSbander` | Kafka-Topics, Worker | AGI-6,7,8,12 |
+| Phase 4 | `Integration` | Zen-Swarm, Head-Container | AGI-11,15,17,16 |
+| Phase 5 | `Go-Live` | Dashboards, CI/CD | AGI-9,10,13,14,18,19 |
 
-### Phase 2 (Kommandozentrale & Security)
+### Cycle Workflow
 
-1. Führe `git init` aus
-2. Lege zwingend zuerst die `.gitignore` an
-3. Lege danach die `.env` Datei an und setze das Anthropic-Limit auf 16 $
-4. Starte Plane via `docker-compose.yml` (siehe Abschnitt 3) in der Management-VM
+```bash
+# Im Plane UI: Views -> By Cycle
+# Oder API:
+GET /api/v1/workspaces/{ws}/projects/{proj}/cycles/
 
-### Phase 3 (Werkstatt)
+# Automatisch beim Start:
+./ops/start-factory.sh  # -> startet inbox_poller
+```
 
-Jenkins installieren, Git-Hooks einrichten.
-
-### Phase 4 (Integration)
-
-Das `gatekeeper.py` Script (siehe Abschnitt 5) als Dienst starten. Es überwacht fortan Plane.
-
-### Phase 5 (Go-Live)
-
-Eine Vision in Plane posten und die automatisierte Fabrik arbeiten lassen.
+**Cycle-Fortschritt:**
+- Neue Issues landen automatisch im passenden Cycle
+- State-Änderung: Backlog → Todo → In Progress → Done

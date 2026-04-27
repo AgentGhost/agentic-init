@@ -1,0 +1,126 @@
+# Agentic Factory - Role to Model Mappings
+# Single Source of Truth for all provider/model configurations
+
+roles:
+  PO:
+    provider: gemini
+    model: gemini-2.0-flash
+    fallback: groq
+    fallback_model: llama-3.3-70b-versatile
+    description: Product Owner - strategic task decomposition
+
+  Architect:
+    provider: gemini
+    model: gemini-2.0-flash
+    fallback: groq
+    fallback_model: llama-3.3-70b-versatile
+    description: IT Architect - infrastructure & system design
+
+  # Zen-Swarm Roles (local execution)
+  SwarmMaster:
+    provider: ollama
+    model: deepseek-coder:6.7b
+    fallback: groq
+    fallback_model: llama-3.3-70b-versatile
+    description: Swarm Orchestrator - coordinates Zen-Swarm loop
+
+  Researcher:
+    provider: ollama
+    model: phi3:latest
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Researcher - gathers context via Tavily search
+
+  Writer:
+    provider: ollama
+    model: qwen2.5-coder:7b
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Writer - atomic code diffs (SEARCH/REPLACE only)
+
+  Critic:
+    provider: ollama
+    model: llama3:8b
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Zen-Critic - validates diffs, reports code smell
+
+  # Legacy roles (kept for compatibility)
+  Coder:
+    provider: ollama
+    model: deepseek-coder:6.7b
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Senior Fullstack Developer - feature implementation
+
+  Tester:
+    provider: ollama
+    model: llama3:8b
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: QA Engineer - test suite creation & validation
+
+  Reviewer:
+    provider: ollama
+    model: phi3:latest
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Gatekeeper - code review & static analysis
+
+  CEOMoneyKeeper:
+    provider: ollama
+    model: phi3:latest
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Cost control & budget monitoring
+
+  SEC:
+    provider: ollama
+    model: phi3:latest
+    fallback: groq
+    fallback_model: llama-3.1-8b-instant
+    description: Security & compliance auditing
+
+# Ticket type to role mapping
+ticket_routing:
+  Epic: PO
+  Strategic_Vision: PO
+  Architecture_Blueprint: Architect
+  Feature: SwarmMaster
+  Task: SwarmMaster
+  Bug: SwarmMaster
+  Test: Tester
+  Code_Review: Reviewer
+  Security_Scan: SEC
+  Secret_Scan: SEC
+  Compliance_Check: SEC
+  Cost_Review: CEOMoneyKeeper
+  Budget_Check: CEOMoneyKeeper
+  Cost_Optimization: CEOMoneyKeeper
+  Provider_Analysis: CEOMoneyKeeper
+  Usage_Monitoring: CEOMoneyKeeper
+  # Zen-Swarm direct triggers
+  Zen_Swarm: SwarmMaster
+  Research: Researcher
+  Write: Writer
+  Review: Critic
+
+# Zen-Swarm configuration
+zen_swarm:
+  max_iterations: 3
+  topics:
+    tasks: factory.tasks
+    agent_events: factory.agent-events
+    task_lifecycle: factory.task-lifecycle
+    feedback: factory.feedback
+    dead_letter: factory.dlq
+  rollbacks:
+    enabled: true
+    on_consumer_failure: true
+
+# Ollama models to pull on init
+ollama_models:
+  - deepseek-coder:6.7b
+  - qwen2.5-coder:7b
+  - llama3:8b
+  - phi3:latest
