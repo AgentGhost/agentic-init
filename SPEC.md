@@ -401,3 +401,37 @@ GET /api/v1/workspaces/{ws}/projects/{proj}/cycles/
 **Cycle-Fortschritt:**
 - Neue Issues landen automatisch im passenden Cycle
 - State-Änderung: Backlog → Todo → In Progress → Done
+
+---
+
+## 9. Operative Scripts (ToDo)
+
+### ops/ Scripts (Operational)
+| Script | Purpose | Status |
+|--------|---------|--------|
+| `ops/backup/plane-data.sh` | Backup plane data (PostgreSQL, Redis, MinIO, RabbitMQ) | TODO |
+| `ops/rollback/plane-data.sh` | Rollback to previous backup | TODO |
+| `ops/copy/plane-data.sh` | Copy/move plane data between environments | TODO |
+
+### dev/ Scripts (Development)
+| Script | Purpose | Status |
+|--------|---------|--------|
+| `dev/deploy.sh` | Deploy application (git push → Jenkins → Docker) | TODO |
+| `dev/migrate.sh` | Migrate plane data via Kafka topics | TODO |
+
+### Usage
+```bash
+# Backup
+./ops/backup/plane-data.sh
+
+# Rollback
+./ops/rollback/plane-data.sh --backup-id=20260428
+
+# Copy
+./ops/copy/plane-data.sh --from=prod --to=staging
+
+# Deploy
+./dev/deploy.sh --env=production
+
+# Migrate via Kafka
+./dev/migrate.sh --topic=factory.tasks
