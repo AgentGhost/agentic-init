@@ -1,348 +1,175 @@
-# 🏭 Agentic Software Factory - Hybrid AI ALM
+# 🏭 Agentic Software Factory
 
-Ein hochautomatisiertes Development-Setup für 2026: Lokale GPU-Power trifft Cloud-Intelligenz.
-
-**Fokus:** Stabiler, kosteneffizienter AI-Dev-Agent mit hoher (kontrollierter) Autonomie.
+**Template Reference Project** - Copy and adapt to your needs.
 
 ---
 
-## 🎯 Kern-Features
-
-| Feature | Status | Beschreibung |
-|---------|--------|-------------|
-| **Lokale GPU-Kraftwerk** | ✅ | RX 6900 XT (16GB VRAM) via Ollama |
-| **Multi-Agent Routing** | ✅ | Cloud für Strategie, Lokal für Ausführung |
-| **Kostenkontrolle** | ✅ | Hard-Limit $16/Monat via Anthropic |
-| **Gatekeeper Router** | ✅ | Intelligente Ticket-Verteilung |
-| **Git Integration** | ✅ | Pre-Commit Hooks mit AI-Review |
-| **Plane Integration** | 🔄 | Requirements Management via Docker |
-
----
-
-## 📋 Architektur
-
-```
-┌─────────────────────────────────────────┐
-│     Vision / Task (vom Menschen)       │
-└────────────────┬────────────────────────┘
-                 │
-         ┌───────▼────────┐
-         │  GATEKEEPER    │ (Router-Logik)
-         └───┬────────┬───┘
-             │        │
-    ┌────────▼┐   ┌───▼───────┐
-    │ CLOUD   │   │ LOCAL     │
-    │ $$ $    │   │ FREE      │
-    └────┬────┘   └───┬───────┘
-         │            │
-    ┌────▼────┐   ┌───▼──────────────┐
-    │  PO     │   │ Coder (Qwen)     │
-    │Architect│   │ Tester (Llama)   │
-    │(Claude) │   │ Reviewer (Phi3)  │
-    └─────────┘   └──────────────────┘
-```
-
----
-
-## 🚀 Schnelstart
-
-### Phase 1: Hardware Setup
-
-**Voraussetzung:** Windows/Linux mit GPU (RX 6900 XT oder ähnlich)
+## Quick Start
 
 ```bash
-# 1. Installiere Ollama
-# https://ollama.ai
+# 0. Requirements
+# - Python 3.10+ (miniconda recommended: C:\Users\Michael\miniconda3\python.exe)
+# - Docker Desktop
+# - GitHub CLI (gh) - for PRs, issues, repo management
 
-# 2. Klone dieses Repo
-git clone <repo-url>
+# 1. Clone & setup
+git clone <your-repo>
 cd agentic-init
+cp sec/.env.example sec/.env
 
-# 3. Starte init-ai.sh
-chmod +x init-ai.sh
-./init-ai.sh
+# 2. Start infrastructure (in WSL or Docker host)
+cd ops && ./start-factory.sh
+
+# OR on Windows (use PowerShell script):
+powershell -ExecutionPolicy Bypass -File "ops/start-docker.ps1"
+
+# The start-docker.ps1 script:
+# 1. Checks if Docker Desktop is running
+# 2. Starts Docker Desktop if not (C:\Program Files\Docker\Docker\Docker Desktop.exe)
+# 3. Waits 15 seconds for Docker to initialize
+# 4. Runs docker-compose up -d
+
+# 3. Run inbox_poller (auto-started by start-factory.sh)
+# or manually: cd dev && python inbox_poller.py
 ```
 
-Die `init-ai.sh` wird automatisch:
-- ✅ Ollama validieren
-- ✅ Modelle pullen (deepseek-coder:6.7b, llama3:8b, phi3)
-- ✅ GPU-Support testen
+## New Session / Restart
 
-### Phase 2: Sicherheit & Konfiguration
+To restore context in a new session:
 
 ```bash
-# 1. Git initialisieren
-git init
+# Read these 3 files (critical)
+cat SPEC.md              # Master spec + phases + architecture
+cat sec/.env             # API keys + config
+cat sec/config/models.yaml # Role → Model mappings
 
-# 2. .gitignore ist bereits vorhanden ✅
-
-# 3. Hole deinen Anthropic API Key
-# -> https://console.anthropic.com/api/keys
-
-# 4. Erstelle .env
-cp .env.example .env
-# Editiere .env und trage deinen Key ein
-# WICHTIG: Setze Hard-Limit auf $16 in Anthropic Console!
+# Or quick check:
+python dev/gatekeeper.py --test-fallback
 ```
 
-**Sicherheits-Checkliste:**
-- [ ] `.env` enthält nur lokale Kopie
-- [ ] `.env` steht in `.gitignore`
-- [ ] API-Key nie in Git commitet
-- [ ] Hard-Limit in Anthropic Console gesetzt
+## Architecture
 
-### Phase 3: Plane (Requirements Management)
-
-```bash
-# Starte Plane via Docker Compose
-docker-compose up -d
-
-# Zugriff:
-# - Web UI: http://localhost:8080
-# - API: http://localhost:8000
+```
+WSL 2 (Head)                 Windows Host (Body)
+┌─────────────┐             ┌─────────────┐
+│  Plane      │             │  RX 6900 XT │
+│  Kafka      │◄──Kafka────│  Ollama    │
+│  Jenkins   │             │  IDE       │
+│  head container         │
+└─────────────┘             └─────────────┘
 ```
 
-### Phase 4: Router testen
+**Zen-Swarm Loop:** Research → Writer → Critic (max 3 iters)
 
-```bash
-# Starte gatekeeper.py mit Demo-Tickets
-python3 gatekeeper.py
+## Services
+
+| Service | URL | Port |
+|---------|-----|------|
+| Plane Web | http://localhost | 80/443 |
+| Kafka UI | http://localhost:8085 |
+| Kafka | localhost | 9092 |
+| Jenkins | http://localhost:8081 |
+| MinIO | http://localhost:9000 |
+
+## Docker Troubleshooting
+
+### docker-compose.yml syntax errors
+If you get `additional properties 'xxx' not allowed` errors:
+- Check that services are defined inside the `services:` block (after line 212)
+- NOT after `volumes:` or `networks:` blocks at the end of the file
+- Validate with: `docker-compose config -q`
+
+### Docker Desktop not running
+On Windows, run:
+```powershell
+powershell -ExecutionPolicy Bypass -File "ops/start-docker.ps1"
 ```
 
-Beispiel-Output:
-```
-🏭 Agentic Software Factory - Gatekeeper Router
-☁️  [CLOUD - PO] Sende Request an Anthropic...
-✅ Response erhalten (1234 Zeichen)
+Or manually start Docker Desktop, wait 15s, then run `docker-compose up -d` in `ops/`.
 
-🖥️  [LOCAL - Coder] Sende Request an Ollama (qwen2.5-coder:14b)...
-✅ Response erhalten (567 Zeichen)
-```
-
----
-
-## 📁 Dateistruktur
+## Project Structure
 
 ```
 agentic-init/
-├── SPEC.md                    # Master-Spezifikation (Single Source of Truth)
-├── README.md                  # Dieses Dokument
-├── init-ai.sh                 # Setup-Script für lokale Modelle
-├── gatekeeper.py              # Core Router (Ticket → Agent)
-├── docker-compose.yml         # Plane (Requirements Management)
-├── .gitignore                 # Sicherheit: .env wird nicht committed
-├── .env.example               # Template für lokale Umgebung
-└── hooks/
-    └── pre-commit.sh          # Git Hook mit AI-Review
+├── dev/                     # Code (gatekeeper, inbox_poller, worker, swarm_ctrl)
+├── ops/                     # Docker, scripts, plane data
+├── sec/                     # Config + keys (models.yaml, .env)
+├── docs/                    # Documentation
+├── SPEC.md                  # Master spec (READ THIS)
+└── README.md               # This file
 ```
+
+## Key Files for Context Restore
+
+| File | What It Contains |
+|------|-----------------|
+| `SPEC.md` | Phases, roles, Zen-Swarm, architecture |
+| `sec/.env` | API keys, endpoints |
+| `sec/config/models.yaml` | Role→model routing |
+| `dev/gatekeeper.py` | Multi-provider router logic |
+| `dev/inbox_poller.py` | Plane→Zen-Swarm connector |
+| `dev/swarm_ctrl.py` | Research→Write→Critic loop |
+| `ops/docker-compose.yml` | Infrastructure stack |
+| `Plane (web)` | Issues, cycles, modules |
+
+**Python 3.10+ required** (miniconda recommended)
+
+## Plane Views & Components
+
+**Naming Convention:** `{component}-{function}`
+- `plane-ui` - Plane user interface
+- `plane-db` - Plane database/config
+- `plane-workflow` - Plane automation/workflow
+- `plane-docs` - Plane documentation
+- `kafka-db` - Kafka data storage
+- `docker-service` - Docker service config
+- `docker-db` - Docker data volumes
+- `gatekeeper-agent` - Agent execution
+- `gatekeeper-service` - Gatekeeper API
+- `gatekeeper-workflow` - Gatekeeper automation
+- `jenkins-pipeline` - Jenkins CI/CD
+- `github-ci` - GitHub Actions
+
+Create **Views** in Plane UI to filter by component label:
+
+1. Project → Views → New View
+2. Add filter: `label = "<component>"`
+
+| View Name | Filter |
+|-----------|--------|
+| Gatekeeper | `label contains "gatekeeper"` |
+| Kafka | `label contains "kafka"` |
+| Jenkins | `label contains "jenkins"` |
+| Docker | `label contains "docker"` |
+| Plane | `label contains "plane"` |
+| GitHub | `label contains "github"` |
+
+Each issue has exactly one component label (single responsibility).
+
+## Cycles (SPEC Phases)
+
+| Cycle | Phase | Focus | Issues |
+|-------|-------|-------|--------|
+| Phase 1 | Kraftwerk | Ollama, GPU | (manual) |
+| Phase 2 | BUero | Git, config | AGI-1,2,3,4,5 |
+| Phase 3 | FliesSbander | Kafka, Worker | AGI-6,7,8,12 |
+| Phase 4 | Integration | Docker, SEC | AGI-9,10,11,16,17 |
+| Phase 5 | Go-Live | Monitoring | AGI-13,14,18,19 |
+
+## Processual Use Cases (Modules)
+
+In Plane UI: Project → Modules. Instead of "epics", these are **processual workflows**:
+
+| Module | Process | Key Issues |
+|-------|---------|------------|
+| `[UC] Ticket Processing` | Backlog → Todo → In Progress → Done | AGI-1,2,3,4,5,17 |
+| `[UC] Zen-Swarm Execution` | Research → Write → Critic (3x) | AGI-6,7,15 |
+| `[UC] Event-Driven Architecture` | Kafka topics, events | AGI-8,12 |
+| `[UC] CI/CD Pipeline` | GitHub → Jenkins → Docker | AGI-9,10,11 |
+| `[UC] Monitoring & Alerts` | Prometheus + Grafana | AGI-13,14,16,18,19 |
+
+**View filter:** `module = "[UC] Ticket Processing"` etc.
 
 ---
 
-## 🤖 Agent Roles
-
-All role-to-model mappings are defined in `config/models.yaml`.
-
-| Role | Provider | Description |
-|------|----------|-------------|
-| **PO** | Cloud (Gemini/Groq) | Vision → Epics, Backlog, DoD |
-| **Architect** | Cloud (Gemini/OpenRouter) | Terraform, Kafka-Design, IaC |
-| **Coder** | Local (Ollama) | Feature implementation |
-| **Tester** | Local (Ollama) | Unit tests, QA |
-| **Reviewer** | Local (Ollama) | Code review, static analysis |
-| **CEOMoneyKeeper** | Local (Ollama) | Cost control & budget monitoring |
-
-Costs: Local = €0, Cloud = FREE tier (Gemini 15 RPM, Groq 30 RPM)
-
----
-
-## 🔐 API Keys & Kostenkontrolle
-
-### Anthropic (Einmalige Einrichtung)
-
-```bash
-# 1. Konto erstellen
-# https://console.anthropic.com
-
-# 2. Hard-Limit setzen (ZWINGEND!)
-# Settings → Billing → Limits → $16.00
-# Dies verhindert Kostenausgehen bei Loop-Bugs
-
-# 3. API Key generieren
-# Settings → API Keys
-
-# 4. In .env eintragen
-ANTHROPIC_API_KEY=sk-ant-api01-xxxxxxxxxxxxx
-```
-
-### Tokens sparen
-
-- **80-90% Tasks → Lokal** (kostenlos)
-- **10-20% Tasks → Cloud** (strategisch)
-- **Caching:** Häufige Prompts lokal in SQLite cachen
-
----
-
-## 📊 Git Workflow
-
-### Mit AI-Unterstützung
-
-```bash
-# 1. Feature-Branch
-git checkout -b feature/my-feature
-
-# 2. Code via Agent generieren lassen
-# (Nutze gatekeeper.py oder Ollama direkt)
-
-# 3. Pre-Commit Hook läuft automatisch
-# - Syntax-Checks ✅
-# - Optional: AI-Review via phi3 🤖
-git add .
-git commit -m "feat: my feature
-
-Implemented by: deepseek-coder:6.7b
-Tests: unit + integration
-"
-
-# 4. Push & PR
-git push origin feature/my-feature
-gh pr create --title "AI: My Feature" --body "Generated with AI support"
-```
-
-### Commit-Message Format
-
-```
-feat(component): description
-
-AI-Context:
-- Model: deepseek-coder:6.7b
-- Time: 2min
-- Tests: ✅ 12/12 passed
-```
-
----
-
-## 🔄 Workflow-Beispiel: Login-System
-
-```
-1. VISION (Mensch → Cloud PO)
-   "Baue sicheres Login mit OAuth2 + Kafka Event Stream"
-
-   ↓ (Router: Strategic_Vision)
-
-2. BREAKDOWN (PO Agent → Plane Tickets)
-   Epic: User Authentication System
-   - US-101: OAuth2 Provider Integration
-   - US-102: JWT Token Management
-   - US-103: Kafka Event Stream Setup
-
-   ↓ (Router: Feature)
-
-3. IMPLEMENTATION (Coder Agent → Ollama Qwen)
-   "Implementiere OAuth2 Provider..."
-   → auth_provider.py (267 Zeilen)
-
-   ↓ (Router: Test)
-
-4. TESTING (Tester Agent → Ollama Llama)
-   "Schreibe Unit-Tests für OAuth2..."
-   → test_auth_provider.py (156 Zeilen)
-
-   ↓ (Pre-Commit Hook)
-
-5. CODE REVIEW (Reviewer Agent → Ollama Phi3)
-   Syntax ✅ | Security ✅ | Style ✅
-
-   ↓
-
-6. COMMIT & PR (Manuell freigegeben)
-   ✅ Push to feature/oauth2
-   ✅ GitHub PR created
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### Ollama findet GPU nicht
-
-```bash
-# Prüfe GPU Status
-ollama ps
-
-# Falls leer: GPU wird nicht genutzt
-# Lösungen:
-# 1. Windows/AMD: Erwäge LM Studio mit Vulkan Backend
-# 2. Linux: Prüfe ROCm Installation
-# 3. Docker: GPU-Support aktivieren
-```
-
-### Anthropic API Returns 429 (Rate Limit)
-
-```bash
-# Du hast dein $16 Limit überschritten!
-# Prüfe: https://console.anthropic.com/account/usage
-# Setze evtl. Hard-Limit tiefer oder warte bis Monat endet
-```
-
-### Plane Container startet nicht
-
-```bash
-# Logs anschauen
-docker-compose logs plane-api
-
-# Typisches Problem: Port 8000/8080 belegt
-# Ändern in docker-compose.yml:
-# ports:
-#   - "8001:8000"  # Statt 8000
-```
-
----
-
-## 📈 Skalierung für Produktion
-
-### Mit zusätzlichen Cloud-Features
-
-```yaml
-# Künftige Erweiterungen:
-- ChromaDB: RAG (Retrieval-Augmented Generation)
-- SQLite Memory: Agent-Kontext über Sessions
-- LangGraph: Komplexe Multi-Agent Orchestration
-- Jenkins: Automated Build & Deploy Pipeline
-```
-
-### Hyperscale-Ready
-
-Alle Terraform-Blueprints sind bereits vorbereitet für:
-- AWS (ECS, Lambda, RDS)
-- Azure (AKS, Cosmos DB)
-- GCP (Cloud Run, Cloud SQL)
-
----
-
-## 📚 Dokumentation
-
-| Dokument | Zweck |
-|----------|-------|
-| [SPEC.md](SPEC.md) | Vollständige Spezifikation (Single Source of Truth) |
-| [gatekeeper.py](gatekeeper.py) | Core Router - Quellcode |
-| [init-ai.sh](init-ai.sh) | Setup-Script |
-| [.env.example](.env.example) | Umgebungsvariablen-Template |
-
----
-
-## 📞 Support
-
-- **Ollama Issues:** https://github.com/ollama/ollama/issues
-- **Anthropic API:** https://support.anthropic.com
-- **Plane Docs:** https://docs.plane.so
-- **GitHub Copilot:** VS Code Chat Integrated
-
----
-
-## 📄 Lizenz
-
-MIT
-
----
-
-**Made for 2026** — Ein Jahr ohne Grenzen für lokale AI Development. 🚀
+MIT 2026

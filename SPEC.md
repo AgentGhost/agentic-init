@@ -1,5 +1,10 @@
 # Master-Spec: Agentic Software Factory (Hybrid AI ALM)
 
+> **⚠️ TEMPLATE REFERENCE PROJECT**  
+> Copy and adapt to your needs. This is a reference implementation, not a production-ready system.
+
+---
+
 Diese Spezifikation beschreibt eine hochautomatisierte Software-Fabrik für das Jahr 2026. Sie nutzt lokale GPU-Power (RX 6900 XT) für die operative Ausführung und Cloud-Intelligenz (Claude) für die strategische Steuerung.
 
 Da dieses Dokument die "Single Source of Truth" ist, enthält es alle Skripte, Prompts und Konfigurationen direkt eingebettet.
