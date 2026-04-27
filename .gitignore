@@ -65,3 +65,6 @@ build/
 plane/
 ops/plane/data/
 ops/plane/logs/
+
+# Windows: Avoid "broken pipe" error when piping git status to head
+# Use: git status --short (no pipe) or git status 2>/dev/null | head
