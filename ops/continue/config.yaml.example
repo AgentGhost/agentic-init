@@ -1,0 +1,57 @@
+# ==============================================================================
+# Continue Extension Configuration (Local-Only / Strict Sandboxing)
+# Pfad: ~/.continue/config.yaml (Windows: C:\Users\<User>\.continue\config.yaml)
+# ==============================================================================
+
+# Privatsphäre-Einstellung für die Agentic Factory
+allowAnonymousTelemetry: false
+
+models:
+  # 1. Der primäre Coder (Arbeitspferd der Fabrik)
+  - title: "Coder (Qwen 14B)"
+    provider: "ollama"
+    model: "qwen2.5-coder:14b"
+    apiBase: "http://localhost:11434"
+    systemMessage: "Du bist der Senior Fullstack Developer der Agentic Factory. Schreibe sauberen, performanten Code. Du arbeitest lokal und fokussierst dich auf funktionale Korrektheit."
+
+  # 2. Der Tester (Für QA und Unit-Tests im Chat)
+  - title: "Tester / QA (Llama 3.1)"
+    provider: "ollama"
+    model: "llama3.1:8b"
+    apiBase: "http://localhost:11434"
+    systemMessage: "Du bist der QA & Last-Test Ingenieur. Validiere Code, schreibe Unit-Tests und decke Edge-Cases auf."
+
+  # 3. Der Reviewer (Schnelle Triage)
+  - title: "Reviewer (Phi-3)"
+    provider: "ollama"
+    model: "phi3:mini"
+    apiBase: "http://localhost:11434"
+    systemMessage: "Du bist der Gatekeeper. Prüfe diesen Code extrem schnell und präzise auf Syntax-Fehler und Security-Leaks."
+
+tabAutocompleteModel:
+  # Für Autocomplete wird ein kleineres Modell empfohlen, da 14B bei jedem Tastendruck zu langsam sein kann.
+  # Führe dazu einmal aus: `ollama pull qwen2.5-coder:1.5b`
+  title: "Fast Autocomplete (Qwen 1.5B)"
+  provider: "ollama"
+  model: "qwen2.5-coder:1.5b" 
+  apiBase: "http://localhost:11434"
+
+contextProviders:
+  # Aktiviert @codebase, @diff und @terminal im Chat
+  - name: "codebase"
+    params: {}
+  - name: "diff"
+    params: {}
+  - name: "terminal"
+    params: {}
+  - name: "docs"
+    params: {}
+
+slashCommands:
+  # Standard-Befehle für schnelles Arbeiten
+  - name: "edit"
+    description: "Markierten Code bearbeiten (Ctrl/Cmd + Shift + M)"
+  - name: "share"
+    description: "Diesen Chat-Verlauf exportieren"
+  - name: "cmd"
+    description: "Einen Shell-Befehl generieren"
