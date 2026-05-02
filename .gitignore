@@ -67,5 +67,8 @@ plane/
 ops/plane/data/
 ops/plane/logs/
 
+# Plane backups (local only, not tracked)
+ops/backups/
+
 # Windows: Avoid "broken pipe" error when piping git status to head
 # Use: git status --short (no pipe) or git status 2>/dev/null | head
