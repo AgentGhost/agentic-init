@@ -1,0 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: plane-quality-gate
+        name: Plane Quality Gate (work items exist)
+        entry: python ops/scripts/pre_commit_quality.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      - id: plane-issues-validated
+        name: Validate Plane issues have cycle/module
+        entry: python ops/scripts/validate_plane.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
