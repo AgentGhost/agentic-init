@@ -115,10 +115,10 @@ Die RX 6900 XT (16GB VRAM) unter Windows dient als lokales Kraftwerk. Die Intell
 
 | Rolle | Modell | VRAM Bedarf | Ollama Befehl |
 |-------|--------|-------------|---------------|
-| Swarm Master | qwen2.5-coder:14b | ~10 GB | `ollama pull qwen2.5-coder:14b` |
-| Zen-Critic / QA | llama3.1:8b | ~5 GB | `ollama pull llama3.1` |
+| Swarm Master | deepseek-coder:6.7b | ~4 GB | `ollama pull deepseek-coder:6.7b` |
+| Zen-Critic / QA | llama3:8b | ~5 GB | `ollama pull llama3:8b` |
 | Sub: Writer | qwen2.5-coder:7b | ~4 GB | `ollama pull qwen2.5-coder:7b` |
-| Sub: Researcher | phi3:mini | ~2 GB | `ollama pull phi3` |
+| Sub: Researcher | phi3:latest | ~2 GB | `ollama pull phi3` |
 
 ### GPU-Verifizierung (Windows/AMD)
 
