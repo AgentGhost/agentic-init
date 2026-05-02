@@ -19,21 +19,7 @@ if ! docker info > /dev/null 2>&1; then
 fi
 echo -e "${GREEN}OK Docker running${NC}"
 
-if [ ! -f .env ]; then
-    echo -e "${YELLOW}W .env not found. Creating from .env.example...${NC}"
-    if [ -f .env.example ]; then
-        cp .env.example .env
-        echo -e "${YELLOW}Edit .env with your API keys${NC}"
-    else
-        echo -e "${RED}X No .env.example found.${NC}"
-        exit 1
-    fi
-fi
-echo -e "${GREEN}OK Environment configured${NC}"
-
-if [ ! -f variables.env ]; then
-    echo -e "${YELLOW}W variables.env not found. Copying from plane-app or using defaults...${NC}"
-fi
+if [ ! -f ../sec/.env ]; then
 
 if curl -s http://localhost:11434/api/version > /dev/null 2>&1; then
     echo -e "${GREEN}OK Ollama running${NC}"
@@ -52,7 +38,7 @@ fi
 echo ""
 
 echo -e "${BLUE}2. Starting infrastructure${NC}"
-docker-compose --env-file variables.env up -d
+docker-compose --env-file ../sec/.env up -d
 echo -e "${GREEN}OK Docker services started${NC}"
 echo ""
 

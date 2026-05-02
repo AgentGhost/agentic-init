@@ -37,7 +37,7 @@ fi
 fi
 echo -e "${GREEN}OK Environment configured${NC}"
 
-if [ ! -f variables.env ]; then
+if [ ! -f ../sec/.env ]; then
     echo -e "${YELLOW}W variables.env not found in ops/...${NC}"
 fi
 
@@ -62,7 +62,7 @@ fi
 echo ""
 
 echo -e "${BLUE}2. Starting infrastructure${NC}"
-docker-compose --env-file variables.env up -d
+docker-compose --env-file ../sec/.env up -d
 echo -e "${GREEN}OK Docker services started${NC}"
 echo ""
 

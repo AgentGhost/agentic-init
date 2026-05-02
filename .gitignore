@@ -1,7 +1,7 @@
 # Environment variables (local only)
 .env
 .env.local
-variables.env
+sec/.env
 
 # IDE & OS
 .vscode/
