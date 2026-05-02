@@ -73,6 +73,16 @@ WSL 2 (Head)                 Windows Host (Body)
 | Jenkins | http://localhost:8081 |
 | MinIO | http://localhost:9000 |
 
+## Backup & Restore
+
+```bash
+# Backup Plane project to ops/backups/
+python ops/scripts/backup_plane.py
+
+# Restore from backup (requires Plane API access)
+python ops/scripts/restore_plane.py ops/backups/<backup_file>.json
+```
+
 ## Docker Troubleshooting
 
 ### docker-compose.yml syntax errors
