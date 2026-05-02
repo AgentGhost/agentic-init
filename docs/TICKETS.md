@@ -34,11 +34,11 @@ Use Plane's **parent → child** relation:
    - Description: full details, requirements, test cases
 
 2. **Cycle** = WHEN to do it
-   - Set via Plane UI Cycles, not in issue name
+   - Set via Plane UI (Project → Cycles)
 
 3. **Module** = WHERE (technical object)
-   - Set via Plane UI Modules, not in issue name
+   - Set via Plane UI (Project → Modules)
 
 4. **Labels** = ORG information
-   - Team: ops, dev, sec (custom per project)
+   - Team: ops, dev, sec
    - Dependencies: blocked-by, relates-to

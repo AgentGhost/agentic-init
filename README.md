@@ -119,6 +119,8 @@ Or manually start Docker Desktop, wait 15s, then run `docker-compose up -d` in `
 
 See **SPEC.md** for full documentation.
 
+See **docs/TICKETS.md** for ticket type system (EPIC, STORY, BUG, TASK, FINDING).
+
 See **docs/PLANE.md** for Plane usage guide (views, cycles, modules).
 
 ---
