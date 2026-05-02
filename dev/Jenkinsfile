@@ -92,7 +92,7 @@ pipeline {
     }
 
     stage('🚀 OPS: Deploy') {
-        when { anyOf { branch 'main'; branch 'master' } }
+        when { branch 'main' }
         steps {
             script {
                 echo "Deploying to environment"
