@@ -379,13 +379,16 @@ exit 0
 
 Die Implementierung folgt den 5 Phasen. In Plane werden diese als **Cycles** verwaltet:
 
-| Phase | Cycle Name | Focus | Key Issues |
-|-------|-------------|-------|------------|
-| Phase 1 | `Kraftwerk` | Ollama, Modelle, GPU | (manual setup) |
-| Phase 2 | `BUero` | Git, .env, Docker | AGI-1,2,3,4,5 |
-| Phase 3 | `FliesSbander` | Kafka-Topics, Worker | AGI-6,7,8,12 |
-| Phase 4 | `Integration` | Zen-Swarm, Head-Container | AGI-11,15,17,16 |
-| Phase 5 | `Go-Live` | Dashboards, CI/CD | AGI-9,10,13,14,18,19 |
+| Phase | Cycle Name | Focus |
+|-------|-------------|-------|
+| Phase 1 | `Kraftwerk` | Ollama, Modelle, GPU |
+| Phase 2 | `BUero` | Git, .env, Docker |
+| Phase 3 | `FliesSbander` | Kafka-Topics, Worker |
+| Phase 4 | `Integration` | Zen-Swarm, Head-Container |
+| Phase 5 | `Go-Live` | Dashboards, CI/CD |
+
+> **Note:** Cycle IDs are managed in Plane UI (`http://localhost/agentic-projects/`). 
+> Key Issues are tracked as children of EPICs in Plane.
 
 ### Cycle Workflow
 
