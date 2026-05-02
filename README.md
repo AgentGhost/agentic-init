@@ -6,6 +6,22 @@
 
 ---
 
+## Commit Convention
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) and reference the work item:
+
+```
+feat(ops): add backup script
+
+Refs: AGI-89
+```
+
+- Type: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`
+- Scope: `ops`, `dev`, `sec`, `readme`, etc.
+- Reference: `Refs: AGI-<sequence_id>` (from Plane issue)
+
+---
+
 ## Quick Start
 
 ```bash
@@ -99,88 +115,11 @@ powershell -ExecutionPolicy Bypass -File "ops/start-docker.ps1"
 
 Or manually start Docker Desktop, wait 15s, then run `docker-compose up -d` in `ops/`.
 
-## Project Structure
+## Reference
 
-```
-agentic-init/
-├── dev/                     # Code (gatekeeper, inbox_poller, worker, swarm_ctrl)
-├── ops/                     # Docker, scripts, plane data
-├── sec/                     # Config + keys (models.yaml, .env)
-├── docs/                    # Documentation
-├── SPEC.md                  # Master spec (READ THIS)
-└── README.md               # This file
-```
+See **SPEC.md** for full documentation.
 
-## Key Files for Context Restore
-
-| File | What It Contains |
-|------|-----------------|
-| `SPEC.md` | Phases, roles, Zen-Swarm, architecture |
-| `sec/.env` | API keys, endpoints |
-| `sec/config/models.yaml` | Role→model routing |
-| `dev/gatekeeper.py` | Multi-provider router logic |
-| `dev/inbox_poller.py` | Plane→Zen-Swarm connector |
-| `dev/swarm_ctrl.py` | Research→Write→Critic loop |
-| `ops/docker-compose.yml` | Infrastructure stack |
-| `Plane (web)` | Issues, cycles, modules |
-
-**Python 3.10+ required** (miniconda recommended)
-
-## Plane Views & Components
-
-**Naming Convention:** `{component}-{function}`
-- `plane-ui` - Plane user interface
-- `plane-db` - Plane database/config
-- `plane-workflow` - Plane automation/workflow
-- `plane-docs` - Plane documentation
-- `kafka-db` - Kafka data storage
-- `docker-service` - Docker service config
-- `docker-db` - Docker data volumes
-- `gatekeeper-agent` - Agent execution
-- `gatekeeper-service` - Gatekeeper API
-- `gatekeeper-workflow` - Gatekeeper automation
-- `jenkins-pipeline` - Jenkins CI/CD
-- `github-ci` - GitHub Actions
-
-Create **Views** in Plane UI to filter by component label:
-
-1. Project → Views → New View
-2. Add filter: `label = "<component>"`
-
-| View Name | Filter |
-|-----------|--------|
-| Gatekeeper | `label contains "gatekeeper"` |
-| Kafka | `label contains "kafka"` |
-| Jenkins | `label contains "jenkins"` |
-| Docker | `label contains "docker"` |
-| Plane | `label contains "plane"` |
-| GitHub | `label contains "github"` |
-
-Each issue has exactly one component label (single responsibility).
-
-## Cycles (SPEC Phases)
-
-| Cycle | Phase | Focus | Issues |
-|-------|-------|-------|--------|
-| Phase 1 | Kraftwerk | Ollama, GPU | (manual) |
-| Phase 2 | BUero | Git, config | AGI-1,2,3,4,5 |
-| Phase 3 | FliesSbander | Kafka, Worker | AGI-6,7,8,12 |
-| Phase 4 | Integration | Docker, SEC | AGI-9,10,11,16,17 |
-| Phase 5 | Go-Live | Monitoring | AGI-13,14,18,19 |
-
-## Processual Use Cases (Modules)
-
-In Plane UI: Project → Modules. Instead of "epics", these are **processual workflows**:
-
-| Module | Process | Key Issues |
-|-------|---------|------------|
-| `[UC] Ticket Processing` | Backlog → Todo → In Progress → Done | AGI-1,2,3,4,5,17 |
-| `[UC] Zen-Swarm Execution` | Research → Write → Critic (3x) | AGI-6,7,15 |
-| `[UC] Event-Driven Architecture` | Kafka topics, events | AGI-8,12 |
-| `[UC] CI/CD Pipeline` | GitHub → Jenkins → Docker | AGI-9,10,11 |
-| `[UC] Monitoring & Alerts` | Prometheus + Grafana | AGI-13,14,16,18,19 |
-
-**View filter:** `module = "[UC] Ticket Processing"` etc.
+See **docs/PLANE.md** for Plane usage guide (views, cycles, modules).
 
 ---
 
