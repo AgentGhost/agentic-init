@@ -2,6 +2,8 @@
 
 **Template Reference Project** - Copy and adapt to your needs.
 
+> **AI-Assisted Setup**: This project was initially generated using **MiniMax M2.5 Free** via **Zen** in **Opencode**. The AI helped scaffold the docker-compose, scripts, and documentation.
+
 ---
 
 ## Quick Start
