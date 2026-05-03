@@ -26,19 +26,8 @@ fi
 echo -e "${GREEN}OK Docker running${NC}"
 
 if [ ! -f ../sec/.env ]; then
-    echo -e "${YELLOW}W sec/.env not found. Copy from .env.example...${NC}"
-    if [ -f ../sec/.env.example ]; then
-        cp ../sec/.env.example ../sec/.env
-        echo -e "${YELLOW}Edit sec/.env with your API keys${NC}"
-    else
-        echo -e "${RED}X No sec/.env.example found.${NC}"
-    fi
-fi
-fi
-echo -e "${GREEN}OK Environment configured${NC}"
-
-if [ ! -f ../sec/.env ]; then
-    echo -e "${YELLOW}W variables.env not found in ops/...${NC}"
+    echo -e "${RED}W: sec/.env required for startup${NC}"
+    exit 1
 fi
 
 if [ ! -d ./plane/logs ]; then
@@ -66,7 +55,36 @@ docker-compose --env-file ../sec/.env up -d
 echo -e "${GREEN}OK Docker services started${NC}"
 echo ""
 
-echo -e "${BLUE}3. Waiting for services${NC}"
+echo -e "${BLUE}3. Waiting for migrations${NC}"
+
+MIGRATOR_RUNNING=true
+counter=0
+timeout=300
+while [ "$MIGRATOR_RUNNING" = true ]; do
+    if docker ps --filter "name=migrator" --format "{{.Names}}" | grep -q "migrator"; then
+        if docker ps --filter "name=migrator" --format "{{.Status}}" | grep -q "Up"; then
+            if [ $counter -eq 0 ]; then
+                echo "   Migration in progress..."
+            fi
+            sleep 5
+            counter=$((counter + 5))
+        else
+            MIGRATOR_RUNNING=false
+        fi
+    else
+        MIGRATOR_RUNNING=false
+    fi
+    if [ $counter -ge $timeout ]; then
+        echo -e "${RED}X Migration timeout (5 min)${NC}"
+        exit 1
+    fi
+done
+if [ $counter -gt 0 ]; then
+    echo -e "   ${GREEN}OK Migrations complete (${counter}s)${NC}"
+fi
+
+echo ""
+echo -e "${BLUE}4. Waiting for services${NC}"
 
 echo "   Plane Database..."
 timeout=60
@@ -109,7 +127,7 @@ echo -e "   ${GREEN}OK Jenkins${NC}"
 
 echo ""
 
-echo -e "${BLUE}4. Agent Team Status${NC}"
+echo -e "${BLUE}5. Agent Team Status${NC}"
 CONFIG_FILE="../sec/config/models.yaml"
 if [ -f "$CONFIG_FILE" ]; then
     python3 -c "
@@ -126,7 +144,7 @@ fi
 
 echo ""
 
-echo -e "${BLUE}5. Starting Agent Services${NC}"
+echo -e "${BLUE}6. Starting Agent Services${NC}"
 
 if [ "$IS_WSL" = true ]; then
     echo "   Starting head container (WSL 2 mode)..."
@@ -172,7 +190,10 @@ else
     echo "   inbox_poller: tail -f plane/logs/inbox_poller.log"
 fi
 echo ""
-echo -e "${BLUE}Next Steps:${NC}"
+echo -e "${BLUE}Note:${NC}"
+echo "   If interrupted during startup, run:"
+echo "   docker logs migrator"
+echo "   to check migration status before restarting."
 echo "   1. Visit Plane to create/manage projects"
 echo "   2. Watch agent respond: docker-compose logs -f head (WSL) or tail -f ops/plane/logs/inbox_poller.log (Windows)"
 echo "   3. Test gatekeeper: python dev/gatekeeper.py --role Coder --prompt 'Hello'"
