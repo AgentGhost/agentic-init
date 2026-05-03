@@ -369,7 +369,7 @@ services:
     deploy:
       replicas: 1
     volumes:
-      - ${INSTALL_DIR:-./plane}/data/mq:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
 
   plane-minio:
     image: minio/minio:latest
@@ -529,7 +529,7 @@ services:
       - live
 
   kafka:
-    image: bitnami/kafka:3.7
+    image: apache/kafka:3.7.0
     ports:
       - "9092:9092"
     environment:
@@ -546,7 +546,7 @@ services:
     restart: unless-stopped
 
   kafka-ui:
-    image: ghcr.io/provectus/kafka-ui:kafka-ui-v0.7.2
+    image: provectuslabs/kafka-ui:latest
     restart: unless-stopped
     ports:
       - "8085:8080"
@@ -589,7 +589,10 @@ services:
 volumes:
   plane-caddy-data:
   kafka_data:
+  rabbitmq_data:
 
 networks:
   default:
     name: agentic-net
+
+name: agentic-init-ops

@@ -20,6 +20,12 @@ fi
 echo -e "${GREEN}OK Docker running${NC}"
 
 if [ ! -f ../sec/.env ]; then
+    echo -e "${YELLOW}W: sec/.env not found. Copy from .env.example${NC}"
+    if [ -f ../sec/.env.example ]; then
+        cp ../sec/.env.example ../sec/.env
+        echo -e "${YELLOW}Edit sec/.env with your values${NC}"
+    fi
+fi
 
 if curl -s http://localhost:11434/api/version > /dev/null 2>&1; then
     echo -e "${GREEN}OK Ollama running${NC}"
