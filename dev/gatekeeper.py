@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CONFIG_PATH = Path(__file__).parent.parent / "sec" / "config" / "models.yaml"
+CONFIG_PATH = Path("/app/config/models.yaml") if Path("/app").exists() else Path(__file__).parent.parent / "sec" / "config" / "models.yaml"
 
 def load_config() -> dict:
     import yaml

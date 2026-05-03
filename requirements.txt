@@ -40,7 +40,7 @@ djangorestframework==3.14.0    # Django REST Framework
 psycopg2-binary==2.9.9         # PostgreSQL Adapter
 
 # Jenkins Integration
-jenkins-python==3.11.0         # Jenkins API Client
+python-jenkins==1.8.2         # Jenkins API Client
 
 # Documentation
 sphinx==7.2.0                  # Doc Generation

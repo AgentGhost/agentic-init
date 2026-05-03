@@ -6,13 +6,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY ../requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../dev/gatekeeper.py /app/
-COPY ../dev/inbox_poller.py /app/
-COPY ../dev/worker.py /app/
-COPY ../sec/config/ ./config/
+COPY dev/gatekeeper.py /app/
+COPY dev/inbox_poller.py /app/
+COPY dev/worker.py /app/
+COPY sec/config/ ./config/
 
 ENV PYTHONUNBUFFERED=1
 ENV PLANE_URL=http://proxy:80

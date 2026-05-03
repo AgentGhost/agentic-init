@@ -181,9 +181,38 @@ plane-mq:
 
 See **SPEC.md** for full documentation.
 
-See **docs/TICKETS.md** for ticket type system (EPIC, STORY, BUG, TASK, FINDING).
+See **docs/TICKETS.md** for ticket type system (INITIATIVE, EPIC, STORY, BUG, TASK, FINDING).
 
-See **docs/PLANE.md** for Plane usage guide (views, cycles, modules).
+Example hierarchy:
+```
+[INITIATIVE] Software Factory
+  └── [EPIC] Core Development
+        └── [STORY] Login flow
+              └── [FINDING] API timeout
+                    ├── [BUG] Fix timeout handling
+                    └── [STORY] Add retry logic (improvement)
+```
+
+## Environment Management
+
+Use tfvars for environment-specific configuration:
+
+```
+sec/env/
+  defaults.tfvars    # shared non-sensitive (committed)
+  dev.tfvars       # dev overrides (gitignored)
+  uat.tfvars      # uat overrides (gitignored)
+  prod.tfvars     # prod overrides (gitignored)
+```
+
+**GitHub Actions workflow** selects environment via dropdown (dev/uat/prod):
+- Loads secrets from repo Settings → Secrets and variables → Actions
+- tfvars files reference secrets as empty (filled at deploy time)
+
+```hcl
+# dev.tfvars example
+ANTHROPIC_API_KEY = ""  # filled from GH Secrets
+```
 
 ---
 

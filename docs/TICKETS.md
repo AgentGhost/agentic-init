@@ -4,7 +4,8 @@
 
 | Type | Purpose | Example |
 |------|---------|----------|
-| **EPIC** | Work package: big feature/initiative | User management |
+| **INITIATIVE** | Root: top-level container | Software Factory |
+| **EPIC** | Child of INITIATIVE | Core Development |
 | **STORY** | Work package: user story with value | Login flow |
 | **BUG** | Work package: fix defect | Fix login bug |
 | **TASK** | Work package: technical work | Docker fix |
@@ -15,16 +16,19 @@
 Use Plane's **parent → child** relation:
 
 ```
-[EPIC] User Management (parent)
-  └── [STORY] Login flow (child)
-  └── [STORY] Password reset (child)
-        └── [FINDING] API timeout (child)
-              └── [BUG] Fix timeout handling (child)
+[INITIATIVE] Software Factory (root)
+  └── [EPIC] Core Development (child)
+  └── [EPIC] User Group and Role Management (child)
+        └── [STORY] Login flow (grandchild of INITIATIVE)
+              └── [FINDING] API timeout (great-grandchild)
+                    └── [BUG] Fix timeout handling
 ```
 
-- EPIC has STORIES (分解)
+- **INITIATIVE**: Root (no parent) - top-level container
+- **EPIC**: Child of INITIATIVE - specific area
+- STORIES → children of EPIC (or direct children of INITIATIVE)
 - STORIES tested → FINDINGS
-- FINDINGS → BUG or STORY (improvement)
+- FINDINGS → BUG (fix) OR STORY (improvement)
 - Use "parent" field in Plane, not labels
 
 ## Structure
