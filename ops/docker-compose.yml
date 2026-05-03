@@ -306,6 +306,8 @@ services:
       - plane-db
       - plane-redis
 
+  # One-time job container - runs migrations, then exits. Other one-time jobs can also use this.
+  # Usage: docker-compose run --rm migrator-job ./bin/docker-entrypoint-migrator.sh
   migrator:
     image: artifacts.plane.so/makeplane/backend-commercial:v2.4.0
     command: ./bin/docker-entrypoint-migrator.sh
