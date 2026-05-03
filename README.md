@@ -99,6 +99,19 @@ python ops/scripts/backup_plane.py
 python ops/scripts/restore_plane.py ops/backups/<backup_file>.json
 ```
 
+## One-Time Jobs
+
+The `migrator` service runs DB migrations once on initial setup, then exits. Use for other one-time jobs:
+
+```bash
+# Run migrations (or any one-time job)
+cd ops
+docker-compose run --rm migrator
+
+# Or with specific command
+docker-compose run --rm migrator ./bin/docker-entrypoint-migrator.sh
+```
+
 ## Docker Troubleshooting
 
 ### docker-compose.yml syntax errors
