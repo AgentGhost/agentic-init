@@ -397,7 +397,7 @@ services:
       replicas: ${SILO_REPLICAS:-1}
     depends_on:
       - plane-redis
-      - plane-mq
+      - plane-redis
 
   email:
     image: artifacts.plane.so/makeplane/email-commercial:v2.4.0
@@ -426,7 +426,7 @@ services:
       replicas: ${AUTOMATION_CONSUMER_REPLICAS:-1}
     depends_on:
       - plane-db
-      - plane-mq
+      - plane-redis
 
   outbox-poller:
     image: artifacts.plane.so/makeplane/backend-commercial:v2.4.0
@@ -438,7 +438,7 @@ services:
       replicas: ${OUTBOX_POLLER_REPLICAS:-1}
     depends_on:
       - plane-db
-      - plane-mq
+      - plane-redis
 
   pi-api:
     image: artifacts.plane.so/makeplane/plane-pi-commercial:v2.4.0
@@ -449,7 +449,7 @@ services:
       replicas: ${PI_API_REPLICAS:-0}
     depends_on:
       - plane-db
-      - plane-mq
+      - plane-redis
       # - monitor  # Requires commercial license - commented out
 
   pi-beat:
@@ -462,7 +462,7 @@ services:
       replicas: ${PI_BEAT_REPLICAS:-0}
     depends_on:
       - plane-db
-      - plane-mq
+      - plane-redis
       - pi-api
 
   pi-worker:
@@ -475,7 +475,7 @@ services:
       replicas: ${PI_WORKER_REPLICAS:-0}
     depends_on:
       - plane-db
-      - plane-mq
+      - plane-redis
 
   pi-migrator:
     image: artifacts.plane.so/makeplane/plane-pi-commercial:v2.4.0
@@ -487,7 +487,7 @@ services:
       replicas: ${PI_MIGRATOR_REPLICAS:-0}
     depends_on:
       - plane-db
-      - plane-mq
+      - plane-redis
 
   # Comment this if you already have a reverse proxy running
   proxy:
@@ -583,7 +583,7 @@ services:
       - proxy
       - plane-db
       - plane-redis
-      - plane-mq
+      - plane-redis
 
 volumes:
   plane-caddy-data:
