@@ -107,13 +107,41 @@ If you get `additional properties 'xxx' not allowed` errors:
 - NOT after `volumes:` or `networks:` blocks at the end of the file
 - Validate with: `docker-compose config -q`
 
-### Docker Desktop not running
-On Windows, run:
-```powershell
-powershell -ExecutionPolicy Bypass -File "ops/start-docker.ps1"
+### Port conflicts (8085, 80)
+If startup fails with port conflicts:
+```bash
+# Check what's using the port
+netstat -ano | findstr ":8085"
+
+# Remove old containers
+docker rm -f $(docker ps -aq -f name="^ops-") 2>/dev/null
 ```
 
-Or manually start Docker Desktop, wait 15s, then run `docker-compose up -d` in `ops/`.
+### API not responding
+1. Check logs: `docker logs agentic-init-ops-api-1`
+2. Check proxy: `docker logs agentic-init-ops-proxy-1`
+3. Check proxy is in network: `docker network inspect agentic-net`
+
+### Container naming issues
+Always use project name to avoid duplicate containers:
+```bash
+# Use -p flag
+docker-compose -p agentic-init-ops up -d
+
+# Or ensure docker-compose.yml has:
+name: agentic-init-ops
+networks:
+  default:
+    name: agentic-net
+```
+
+### RabbitMQ cookie permission errors
+Don't use bind mounts on Windows. Use named volumes:
+```yaml
+plane-mq:
+  volumes:
+    - rabbitmq_data:/var/lib/rabbitmq  # NOT: ./plane/data/mq:/var/lib/...
+```
 
 ## Reference
 

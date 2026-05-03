@@ -25,6 +25,13 @@ if ! docker info > /dev/null 2>&1; then
 fi
 echo -e "${GREEN}OK Docker running${NC}"
 
+echo -e "${BLUE}1b. Cleanup old containers${NC}"
+OLD_CONTAINERS=$(docker ps -aq -f name="^ops-" 2>/dev/null)
+if [ -n "$OLD_CONTAINERS" ]; then
+    echo -e "${YELLOW}Cleaning up old ops-* containers...${NC}"
+    docker rm -f $OLD_CONTAINERS 2>/dev/null
+fi
+
 if [ ! -f ../sec/.env ]; then
     echo -e "${YELLOW}W: sec/.env not found. Copy from .env.example${NC}"
     if [ -f ../sec/.env.example ]; then
