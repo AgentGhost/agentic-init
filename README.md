@@ -124,6 +124,15 @@ docker-compose run --rm migrator ./bin/docker-entrypoint-migrator.sh
 docker logs agentic-init-ops-migrator-1
 ```
 
+### Pre-conditions:
+- Postgres must be running: `docker ps agentic-init-ops-plane-db-1`
+- Redis must be running: `docker ps agentic-init-ops-plane-redis-1`
+- RabbitMQ must be running: `docker ps agentic-init-ops-plane-mq-1`
+
+### Post-conditions:
+- Check success: `docker logs agentic-init-ops-migrator-1` ends with "OK"
+- API should respond: `curl localhost/api/v1/users/me/`
+
 ## Docker Troubleshooting
 
 ### docker-compose.yml syntax errors
