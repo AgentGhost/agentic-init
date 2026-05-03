@@ -26,9 +26,9 @@ fi
 echo -e "${GREEN}OK Docker running${NC}"
 
 echo -e "${BLUE}1b. Cleanup old containers${NC}"
-OLD_CONTAINERS=$(docker ps -aq -f name="^ops-" 2>/dev/null)
+OLD_CONTAINERS=$(docker ps -aq -f name="agentic-init-ops-" 2>/dev/null)
 if [ -n "$OLD_CONTAINERS" ]; then
-    echo -e "${YELLOW}Cleaning up old ops-* containers...${NC}"
+    echo -e "${YELLOW}Cleaning up old agentic-init-ops-* containers...${NC}"
     docker rm -f $OLD_CONTAINERS 2>/dev/null
 fi
 
