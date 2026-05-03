@@ -112,6 +112,18 @@ docker-compose run --rm migrator
 docker-compose run --rm migrator ./bin/docker-entrypoint-migrator.sh
 ```
 
+### When to run migrations:
+
+1. **First-time setup** - Deploying Plane for the first time
+2. **Version upgrade** - Upgrading Plane (e.g., v2.3 → v2.4)
+3. **Fresh DB** - After deleting `plane-db` volume
+4. **Schema errors** - If API logs show DB-related errors
+
+### Check migration status:
+```bash
+docker logs agentic-init-ops-migrator-1
+```
+
 ## Docker Troubleshooting
 
 ### docker-compose.yml syntax errors
