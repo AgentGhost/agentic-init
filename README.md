@@ -57,7 +57,7 @@ To restore context in a new session:
 
 ```bash
 # Read these 3 files (critical)
-cat SPEC.md              # Master spec + phases + architecture
+cat docs/SPEC.md         # Master spec + phases + architecture
 cat sec/.env             # API keys + config
 cat sec/config/models.yaml # Role → Model mappings
 
@@ -179,7 +179,9 @@ plane-mq:
 
 ## Reference
 
-See **SPEC.md** for full documentation.
+See **docs/SPEC.md** for full documentation.
+
+See **docs/HARDWARE.md** for hardware requirements.
 
 See **docs/TICKETS.md** for ticket type system (INITIATIVE, EPIC, STORY, BUG, TASK, FINDING).
 
