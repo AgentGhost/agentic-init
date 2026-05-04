@@ -11,6 +11,8 @@
 | **TASK** | Work package: technical work | Docker fix |
 | **FINDING** | Issue discovered during test | API keys in logs |
 
+**Note:** Testing is not a separate type - include test cases in STORY description.
+
 ## Hierarchy
 
 Use Plane's **parent → child** relation:
