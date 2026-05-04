@@ -92,6 +92,58 @@ WSL 2 (Head)                 Windows Host (Body)
 | Kafka | localhost | 9092 |
 | Jenkins | http://localhost:8081 |
 | MinIO | http://localhost:9000 |
+| Mail Server (SMTP) | localhost | 2025 |
+| Mail Server (IMAP) | localhost | 2143 |
+
+## Mail Server
+
+The project includes **docker-mailserver** for agent email accounts.
+
+### Start mail server
+
+```bash
+cd ops
+docker-compose --env-file ../sec/.env up -d mail
+```
+
+### Add agent accounts
+
+```bash
+# Add mail accounts (run after starting mail container)
+docker exec agentic-mail setup email add agent@factory.local --password changeme
+docker exec agentic-mail setup email add po@factory.local --password changeme
+docker exec agentic-mail setup email add architect@factory.local --password changeme
+docker exec agentic-mail setup email add swarm@factory.local --password changeme
+docker exec agentic-mail setup email add researcher@factory.local --password changeme
+docker exec agentic-mail setup email add writer@factory.local --password changeme
+docker exec agentic-mail setup email add critic@factory.local --password changeme
+```
+
+### Mail volumes
+
+- Mail storage: `./ops/plane/data/mail` (on host)
+- Mail state: Docker volume `agentic-init-ops_mail-state`
+- Logs: Docker volume `agentic-init-ops_mail-logs`
+
+### Ports (non-standard to avoid conflicts)
+
+- 2025 → SMTP
+- 2143 → IMAP
+- 2587 → Submission
+- 2993 → IMAPS
+
+### Configuration
+
+Edit `sec/mail.env` for mail server settings (copy from `sec/mail.env.example`):
+
+```
+DOMAINNAME=factory.local
+HOSTNAME=mail.factory.local
+SSL_TYPE=          # Empty = no SSL (for local dev)
+ENABLE_SPAMASSASSIN=0
+ENABLE_CLAMAV=0
+ENABLE_FAIL2BAN=0
+```
 
 ## Backup & Restore
 

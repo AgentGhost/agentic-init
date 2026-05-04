@@ -192,6 +192,8 @@ echo "   Plane (Project Management): http://localhost"
 echo "   Kafka UI:                   http://localhost:8085"
 echo "   Jenkins (CI/CD):            http://localhost:8081"
 echo "   MinIO (Storage):            http://localhost:9000"
+echo "   Mail Server (SMTP):         localhost:2025"
+echo "   Mail Server (IMAP):          localhost:2143"
 echo ""
 echo -e "${BLUE}Agent Logs:${NC}"
 if [ "$IS_WSL" = true ]; then

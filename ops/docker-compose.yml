@@ -209,6 +209,9 @@ x-pi-env: &pi-env
   CELERY_DOCS_SYNC_ENABLED: ${CELERY_DOCS_SYNC_ENABLED:-0}
   CELERY_DOCS_SYNC_INTERVAL: ${CELERY_DOCS_SYNC_INTERVAL:-86400}
 
+  # Email service (set to 1 to enable)
+  EMAIL_REPLICAS: ${EMAIL_REPLICAS:-0}
+
 services:
   admin:
     image: artifacts.plane.so/makeplane/admin-commercial:v2.4.0
@@ -418,6 +421,26 @@ services:
     deploy:
       replicas: ${EMAIL_REPLICAS:-0}
 
+  mail:
+    image: mailserver/docker-mailserver:latest
+    hostname: mail
+    container_name: agentic-mail
+    domainname: factory.local
+    ports:
+      - "2025:25"    # SMTP (host uses 25 for plane proxy)
+      - "2143:143"  # IMAP
+      - "2587:587"  # Submission
+      - "2993:993"  # IMAPS
+    volumes:
+      - ${INSTALL_DIR:-./plane}/data/mail:/var/mail
+      - mail-state:/var/mail-state
+      - mail-logs:/var/log/mail
+    env_file:
+      - ../sec/mail.env
+    restart: unless-stopped
+    deploy:
+      replicas: ${MAIL_REPLICAS:-0}
+
   automation-consumer:
     image: artifacts.plane.so/makeplane/backend-commercial:v2.4.0
     command: ./bin/docker-entrypoint-automation-consumer.sh
@@ -593,6 +616,8 @@ volumes:
   plane-caddy-data:
   kafka_data:
   rabbitmq_data:
+  mail-state:
+  mail-logs:
 
 networks:
   default:
