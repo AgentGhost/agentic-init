@@ -220,6 +220,30 @@ sec/env/
 ANTHROPIC_API_KEY = ""  # filled from GH Secrets
 ```
 
+## Plane Cleanup Scripts
+
+SQL scripts in `ops/cleanup/` for managing Plane project issues:
+
+```
+ops/cleanup/
+  review-items.sql       # List type prefixes to identify stray items
+  remove-stray-items.sql  # Template for soft-deleting stray items
+  remove-duplicates.sql  # Remove duplicate INITIATIVEs/EPICs
+```
+
+**⚠️ Caution:** These scripts modify the database directly. Always:
+1. Run SELECT first to preview what will be affected
+2. Backup or test on non-production first
+3. Use soft DELETE (deleted_at) before hard DELETE
+
+```sql
+-- Preview first
+SELECT * FROM issues WHERE name LIKE '[STRANGE]%';
+
+-- Soft delete (move to trash)
+UPDATE issues SET deleted_at = NOW() WHERE name LIKE '[STRANGE]%';
+```
+
 ---
 
 MIT 2026
