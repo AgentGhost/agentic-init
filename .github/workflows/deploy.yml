@@ -1,0 +1,81 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - uat
+          - prod
+
+env:
+  TF_VERSION: 1.11.5
+  DOCKER_VERSION: 28.0.4
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set environment variables
+        run: |
+          echo "TF_VAR_environment=${{ github.event.inputs.environment || 'prod' }}" >> $GITHUB_ENV
+          echo "TF_WORKSPACE=${{ github.event.inputs.environment || 'prod' }}" >> $GITHUB_ENV
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init -upgrade
+        env:
+          TF_VAR_plane_project: ${{ secrets.PLANE_PROJECT }}
+          TF_VAR_plane_api_key: ${{ secrets.PLANE_API_KEY }}
+
+      - name: Terraform Plan
+        run: |
+          cd terraform
+          terraform plan -var-file="../sec/env/${{ env.TF_VAR_environment }}.tfvars" -out=tfplan
+        env:
+          TF_VAR_plane_project: ${{ secrets.PLANE_PROJECT }}
+          TF_VAR_plane_api_key: ${{ secrets.PLANE_API_KEY }}
+
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd terraform
+          terraform apply tfplan
+
+      - name: Docker Compose Up
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          docker compose -f ops/docker-compose.yml up -d
+
+      - name: Docker Compose Down
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[destroy]')
+        run: |
+          docker compose -f ops/docker-compose.yml down
+
+      - name: Terraform Destroy
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[destroy]')
+        run: |
+          cd terraform
+          terraform destroy -var-file="../sec/env/${{ env.TF_VAR_environment }}.tfvars" -auto-approve
+        env:
+          TF_VAR_plane_project: ${{ secrets.PLANE_PROJECT }}
+          TF_VAR_plane_api_key: ${{ secrets.PLANE_API_KEY }}

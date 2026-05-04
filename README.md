@@ -59,6 +59,10 @@ To restore context in a new session:
 # Read these 3 files (critical)
 cat docs/SPEC.md         # Master spec + phases + architecture
 cat sec/.env             # API keys + config
+
+# Plane API key is stored in sec/.env (PLANE_API_KEY)
+# API interacts via Caddy proxy at localhost:80/api/v1/
+# Note: If Plane returns 403/404, check proxy logs and workspace name
 cat sec/config/models.yaml # Role → Model mappings
 
 # Or quick check:
