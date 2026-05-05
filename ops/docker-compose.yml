@@ -309,8 +309,10 @@ services:
       - plane-db
       - plane-redis
 
-  # One-time job container - runs migrations, then exits. Other one-time jobs can also use this.
-  # Usage: docker-compose run --rm migrator-job ./bin/docker-entrypoint-migrator.sh
+  # One-time job container - runs migrations, then exits.
+  # IMPORTANT: Set MIGRATOR_REPLICAS=0 after initial setup to avoid re-running
+  # Usage: MIGRATOR_REPLICAS=1 docker-compose up -d migrator (first time only)
+  #        MIGRATOR_REPLICAS=0 docker-compose up -d (normal startup)
   migrator:
     image: artifacts.plane.so/makeplane/backend-commercial:v2.4.0
     command: ./bin/docker-entrypoint-migrator.sh
@@ -318,7 +320,7 @@ services:
       <<: [*plane, *app-env, *pg-env, *redis-env, *rabbitmq-env, *docstore-env, *opensearch-env]
     restart: "no"
     deploy:
-      replicas: 1
+      replicas: ${MIGRATOR_REPLICAS:-0}
     volumes:
       - ${INSTALL_DIR:-./plane}/logs/migrator:/code/plane/logs
     depends_on:

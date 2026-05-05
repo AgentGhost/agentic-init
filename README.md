@@ -157,28 +157,32 @@ python ops/scripts/restore_plane.py ops/backups/<backup_file>.json
 
 ## One-Time Jobs
 
-The `migrator` service runs DB migrations once on initial setup, then exits. Use for other one-time jobs:
+The `migrator` service runs DB migrations once, then exits. Disable after initial setup:
 
 ```bash
-# Run migrations (or any one-time job)
-cd ops
-docker-compose run --rm migrator
+# First time only (after fresh DB):
+MIGRATOR_REPLICAS=1 docker-compose up -d migrator
 
-# Or with specific command
-docker-compose run --rm migrator ./bin/docker-entrypoint-migrator.sh
+# Normal startup (migrator disabled):
+docker-compose --env-file ../sec/.env up -d
 ```
+
+**IMPORTANT:** Set `MIGRATOR_REPLICAS=0` in `sec/.env` after first run to avoid re-running migrations.
 
 ### When to run migrations:
 
 1. **First-time setup** - Deploying Plane for the first time
 2. **Version upgrade** - Upgrading Plane (e.g., v2.3 → v2.4)
-3. **Fresh DB** - After deleting `plane-db` volume
-4. **Schema errors** - If API logs show DB-related errors
+3. **Fresh DB** - After deleting `plane-db` volume or `ops/plane/data/db/`
 
-### Check migration status:
+### Run migrations:
+
 ```bash
-docker logs agentic-init-ops-migrator-1
-```
+# Enable migrator temporarily
+MIGRATOR_REPLICAS=1 docker-compose --env-file ../sec/.env up -d migrator
+
+# Wait for completion, then disable
+# (sec/.env should have MIGRATOR_REPLICAS=0)
 
 ### Pre-conditions:
 - Postgres must be running: `docker ps agentic-init-ops-plane-db-1`
