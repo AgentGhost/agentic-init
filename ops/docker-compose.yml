@@ -616,22 +616,12 @@ services:
 
   # Hugging Face Text Embeddings Inference (TEI) Reranker for continue.dev
   tei-reranker:
-    image: ghcr.io/huggingface/text-embeddings-inference:latest
-    command: --model-id BAAI/bge-reranker-base --port 8080
-    environment:
-      # Optional: set a higher limit if you're dealing with very large requests
-      # MAX_INPUT_LENGTH: 1024
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.6
+    command: --model-id Xenova/bge-reranker-base --port 8080
     ports:
-      - "8080:8080" # Maps container port 8080 to host port 8080 (as configured in .continue/config.yaml)
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all # Use all available GPUs for the reranker
-              capabilities: [gpu]
+      - "8080:8080"
     volumes:
-      - ~/.cache/huggingface/hub:/data # Mount host cache for model storage
+      - ~/.cache/huggingface/hub:/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
