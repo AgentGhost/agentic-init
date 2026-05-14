@@ -303,3 +303,14 @@ UPDATE issues SET deleted_at = NOW() WHERE name LIKE '[STRANGE]%';
 ---
 
 MIT 2026
+
+## Project Context: The Command Center
+
+This `agentic-init` Git project serves as the central command center for your entire Agentic Software Factory. It encompasses:
+
+*   **Source Code and Development Assets:** All application logic, scripts, and development utilities.
+*   **Infrastructure Definitions:** Docker Compose configurations (`ops/docker-compose.yml`) for managing services like Plane, Kafka, and the Hugging Face TEI Reranker.
+*   **Configuration:** Key configuration files, including those for `continue.dev` (located in `~/.continue/config.yaml`), which are designed to integrate seamlessly with the tools and services defined within this project.
+*   **Documentation:** Comprehensive guides and specifications for the factory's operation and architecture.
+
+All operations, development, and infrastructure management should be considered within the context of this repository.
